@@ -5,7 +5,6 @@ const username = $("#username");
 const accountUsername = $("#accountUsername");
 const status = $("#status");
 const accountLabel = $("#accountLabel");
-const sectionDialog = $("#sectionDialog");
 const modDetailsDialog = $("#modDetailsDialog");
 
 const modDefs = [
@@ -196,8 +195,6 @@ function saveOfflineProfile() {
 loadState(); syncAccount(); syncVersion(); syncSettings(); renderMods(); showSection("home");
 $("#settingsButton").addEventListener("click",() => showSection("settings"));
 $$(".tab").forEach(tab => tab.addEventListener("click",() => showSection(tab.dataset.section)));
-$("#sectionPicker").addEventListener("click",() => sectionDialog.showModal());
-$$("[data-go]").forEach(button => button.addEventListener("click",() => { showSection(button.dataset.go); sectionDialog.close(); }));
 $("#openVersions").addEventListener("click",() => showSection("versions"));
 $$(".option[data-version]").forEach(option => option.addEventListener("click",() => { state.version=option.dataset.version; state.profile=option.dataset.profile; syncVersion(); saveState(); }));
 username.addEventListener("input",() => { const value=username.value.trim(); accountLabel.textContent=value||"Offline profile"; if(accountUsername.value!==username.value) accountUsername.value=username.value; });
