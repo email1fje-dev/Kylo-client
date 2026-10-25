@@ -4,36 +4,102 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b0b0e">
-<title>Kylo Launcher</title>
+<title>Kylo Client</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <main class="app">
   <header class="topbar">
-    <div class="brand"><span class="mark">K</span><div><strong>KYLO</strong><small>LAUNCHER</small></div></div>
+    <div class="brand"><span class="mark">K</span><div><strong>KYLO</strong><small>CLIENT</small></div></div>
     <button class="icon-btn" id="settingsButton" aria-label="Open settings">⚙</button>
   </header>
-  <section class="hero">
-    <div class="eyebrow"><span class="dot"></span> JAVA EDITION · MOBILE</div>
-    <h1>YOUR GAME.<br><span>YOUR RULES.</span></h1>
-    <p>A custom home for your Minecraft sessions.</p>
-    <div class="version-card">
-      <div class="cube">K</div><div class="version-copy"><small>SELECTED VERSION</small><strong>Minecraft 1.8.9</strong><span>BedWars profile</span></div>
-      <span class="chevron">⌄</span>
+
+  <nav class="section-tabs" aria-label="Main sections">
+    <button class="tab active" data-section="home"><span>⌂</span>Home</button>
+    <button class="tab" data-section="versions"><span>▤</span>Versions</button>
+    <button class="tab" data-section="mods"><span>✦</span>Mods</button>
+    <button class="tab" data-section="accounts"><span>◉</span>Accounts</button>
+  </nav>
+
+  <section class="page active" id="page-home" data-page="home">
+    <div class="hero">
+      <div class="eyebrow"><span class="dot"></span> JAVA EDITION · MOBILE</div>
+      <h1>YOUR GAME.<br><span>YOUR RULES.</span></h1>
+      <p>A custom home for your Minecraft sessions.</p>
+      <button class="version-card card-button" id="openVersions">
+        <span class="cube">K</span><span class="version-copy"><small>SELECTED VERSION</small><strong id="homeVersion">Minecraft 1.8.9</strong><span id="homeProfile">BedWars profile</span></span><span class="chevron">⌄</span>
+      </button>
+      <label class="field-label" for="username">OFFLINE USERNAME</label>
+      <input id="username" maxlength="16" autocomplete="nickname" placeholder="Enter username">
+      <button class="play-button" id="playButton"><span>▶</span> PREPARE TO PLAY <b>↗</b></button>
+      <p class="notice" id="status" role="status">Preview mode · Minecraft game engine is not connected.</p>
     </div>
-    <label class="field-label" for="username">OFFLINE USERNAME</label>
-    <input id="username" maxlength="16" autocomplete="nickname" placeholder="Enter username" value="">
-    <button class="play-button" id="playButton"><span>▶</span> PLAY <b>↗</b></button>
-    <p class="notice" id="status" role="status">Launcher UI preview · game engine not connected yet.</p>
+    <section class="quick-grid">
+      <article class="tile"><span class="tile-icon">▤</span><div><strong>VERSION</strong><small id="versionSummary">1.8.9 selected</small></div></article>
+      <article class="tile"><span class="tile-icon">◉</span><div><strong>ACCOUNT</strong><small id="accountLabel">Offline profile</small></div></article>
+    </section>
+    <section class="bottom-card"><div><small>BUILT FOR</small><h2 id="homeMode">BEDWARS READY</h2><p id="homeModeDescription">Your PvP setup starts here.</p></div><span class="red-line"></span></section>
   </section>
-  <section class="quick-grid">
-    <article class="tile"><span class="tile-icon">▤</span><div><strong>VERSION</strong><small>1.8.9 selected</small></div></article>
-    <article class="tile"><span class="tile-icon">◉</span><div><strong>ACCOUNT</strong><small id="accountLabel">Offline profile</small></div></article>
+
+  <section class="page" id="page-versions" data-page="versions">
+    <div class="page-heading"><p class="eyebrow">GAME SETUP</p><h1>CHOOSE <span>VERSION</span></h1><p>Select a profile for your setup. This changes the launcher selection only; the game engine is not connected yet.</p></div>
+    <div class="option-list" id="versionOptions">
+      <button class="option selected" data-version="1.8.9" data-profile="BedWars profile"><span class="option-icon">⚔</span><span><strong>Minecraft 1.8.9</strong><small>Classic PvP · BedWars</small></span><span class="option-check">✓</span></button>
+      <button class="option" data-version="1.12.2" data-profile="Classic profile"><span class="option-icon">◆</span><span><strong>Minecraft 1.12.2</strong><small>Classic servers and mods</small></span><span class="option-check">✓</span></button>
+      <button class="option" data-version="1.20.1" data-profile="Modern profile"><span class="option-icon">✧</span><span><strong>Minecraft 1.20.1</strong><small>Modern gameplay profile</small></span><span class="option-check">✓</span></button>
+    </div>
+    <div class="info-card"><strong>Heads up</strong><p>Choosing a version saves it in this page session. Downloading game files and launching Minecraft require a compatible Java runtime and game engine, which are not integrated in this web preview.</p></div>
   </section>
-  <section class="bottom-card"><div><small>BUILT FOR</small><h2>BEDWARS READY</h2><p>Your PvP setup starts here.</p></div><span class="red-line"></span></section>
+
+  <section class="page" id="page-mods" data-page="mods">
+    <div class="page-heading"><p class="eyebrow">CUSTOMIZE YOUR CLIENT</p><h1>CLIENT <span>MODS</span></h1><p>Toggle the mods you want in your planned profile. These switches are saved on this device; they don't install files yet.</p></div>
+    <div class="option-list">
+      <label class="mod-option"><span class="mod-symbol">FPS</span><span class="mod-copy"><strong>FPS Display</strong><small>Show a planned FPS counter</small></span><input type="checkbox" class="switch" data-mod="FPS Display" checked></label>
+      <label class="mod-option"><span class="mod-symbol">CPS</span><span class="mod-copy"><strong>CPS Counter</strong><small>Clicks per second overlay</small></span><input type="checkbox" class="switch" data-mod="CPS Counter" checked></label>
+      <label class="mod-option"><span class="mod-symbol">HUD</span><span class="mod-copy"><strong>Minimal HUD</strong><small>Keep the game view clean</small></span><input type="checkbox" class="switch" data-mod="Minimal HUD"></label>
+      <label class="mod-option"><span class="mod-symbol">SPL</span><span class="mod-copy"><strong>Sprint Toggle</strong><small>Planned PvP convenience toggle</small></span><input type="checkbox" class="switch" data-mod="Sprint Toggle"></label>
+    </div>
+    <p class="notice" id="modsStatus" role="status">2 planned mods enabled.</p>
+  </section>
+
+  <section class="page" id="page-accounts" data-page="accounts">
+    <div class="page-heading"><p class="eyebrow">PLAYER IDENTITY</p><h1>YOUR <span>ACCOUNT</span></h1><p>Set an offline display name for the preview, or see the status of official sign-in.</p></div>
+    <div class="account-card"><span class="avatar">K</span><div><small>ACTIVE PROFILE</small><h2 id="accountName">Offline profile</h2><p id="accountType">Offline username · not authenticated</p></div></div>
+    <label class="field-label" for="accountUsername">OFFLINE USERNAME</label>
+    <input id="accountUsername" maxlength="16" placeholder="3–16 letters, numbers, underscores">
+    <button class="play-button" id="saveAccount">SAVE OFFLINE PROFILE</button>
+    <button class="secondary-button" id="microsoftButton">Sign in with Microsoft <span>↗</span></button>
+    <p class="notice" id="accountStatus" role="status">Offline profiles only work where offline-mode access is supported.</p>
+  </section>
+
+  <section class="page" id="page-settings" data-page="settings">
+    <div class="page-heading"><p class="eyebrow">MAKE IT YOURS</p><h1>CLIENT <span>SETTINGS</span></h1><p>Preferences for the Kylo launcher preview.</p></div>
+    <div class="settings-list">
+      <label class="setting-row"><span><strong>Red accent glow</strong><small>Use the Kylo red highlight</small></span><input id="glowToggle" type="checkbox" class="switch" checked></label>
+      <label class="setting-row"><span><strong>Compact layout</strong><small>Reduce spacing between cards</small></span><input id="compactToggle" type="checkbox" class="switch"></label>
+      <button class="setting-row setting-button" id="resetButton"><span><strong>Reset preview preferences</strong><small>Clear saved selections on this device</small></span><span>↻</span></button>
+    </div>
+    <div class="info-card"><strong>Kylo Client · Early Access</strong><p>This is a working web UI prototype. Microsoft authentication, mod installation, and starting Minecraft are not available until the native launcher engine is built.</p></div>
+  </section>
+
+  <div class="section-picker-wrap">
+    <button class="section-picker" id="sectionPicker"><span>☷</span> CHOOSE A SECTION <b>＋</b></button>
+  </div>
   <footer>KYLO CLIENT <span>•</span> EARLY ACCESS</footer>
 </main>
-<dialog id="settingsDialog"><form method="dialog"><button class="close" aria-label="Close">×</button><p class="eyebrow">PREFERENCES</p><h2>Launcher settings</h2><p>Version: Minecraft Java 1.8.9</p><p>Theme: Black / Red</p><p class="muted">Memory and game launch controls will be added when the Android game engine is integrated.</p><button class="play-button">DONE</button></form></dialog>
+
+<dialog id="sectionDialog">
+  <form method="dialog">
+    <button class="close" aria-label="Close">×</button><p class="eyebrow">NAVIGATION</p><h2>Choose a section</h2>
+    <div class="picker-list">
+      <button type="button" class="picker-option" data-go="home"><span>⌂</span><span><strong>Home</strong><small>Launcher overview and play setup</small></span>↗</button>
+      <button type="button" class="picker-option" data-go="versions"><span>▤</span><span><strong>Versions</strong><small>Choose a Minecraft profile</small></span>↗</button>
+      <button type="button" class="picker-option" data-go="mods"><span>✦</span><span><strong>Mods</strong><small>Toggle planned client features</small></span>↗</button>
+      <button type="button" class="picker-option" data-go="accounts"><span>◉</span><span><strong>Accounts</strong><small>Manage the offline profile</small></span>↗</button>
+      <button type="button" class="picker-option" data-go="settings"><span>⚙</span><span><strong>Settings</strong><small>Customize the preview</small></span>↗</button>
+    </div>
+  </form>
+</dialog>
 <script src="app.js"></script>
 </body>
 </html>
