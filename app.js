@@ -120,6 +120,9 @@ window.kyloAccountRequired = function() {
   showSection("accounts");
   $("#accountStatus").textContent = "Please select an account first, then choose or add an account below.";
 };
+window.kyloLaunchError = function(message) {
+  status.textContent = message || "Minecraft could not be launched. Please try again.";
+};
 function syncVersion() {
   $("#homeVersion").textContent = "Minecraft " + state.version;
   $("#homeProfile").textContent = state.profile;
