@@ -155,7 +155,7 @@ jobs:
                       Accounts.getAccounts().forEachIndexed { index, account ->
                           result.put(JSONObject().put("index", index)
                               .put("name", account.character ?: account.username ?: "Minecraft account")
-                              .put("selected", account == selected))
+                              .put("selected", account === selected))
                       }
                       return result.toString()
                   }
@@ -165,7 +165,7 @@ jobs:
                       val accounts = Accounts.getAccounts()
                       if (index < 0 || index >= accounts.size) return false
                       Accounts.setSelectedAccount(accounts[index])
-                      return Accounts.getSelectedAccount() == accounts[index]
+                      return Accounts.getSelectedAccount() === accounts[index]
                   }
 
                   @JavascriptInterface
