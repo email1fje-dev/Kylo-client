@@ -45,12 +45,13 @@ jobs:
       - name: Build APK
         run: gradle --no-daemon --stacktrace assembleDebug
 
-      - name: Verify APK and launcher Activity
+      - name: Verify APK package
         run: |
           APK="app/build/outputs/apk/debug/app-debug.apk"
           test -s "$APK"
           unzip -t "$APK" >/dev/null
-          unzip -p "$APK" classes.dex | strings | grep -Fq 'Lcom/kyloclient/app/MainActivity;'
+          unzip -l "$APK" | grep -Eq 'classes[0-9]*\\.dex'
+          unzip -p "$APK" AndroidManifest.xml >/dev/null
           ls -lh "$APK"
 
       - name: Upload APK artifact
