@@ -36,6 +36,14 @@ jobs:
           git submodule sync --recursive
           git submodule update --init --recursive
 
+      - name: Checkout Kylo UI
+        uses: actions/checkout@v4
+        with:
+          repository: email1fje-dev/Kylo-client
+          ref: main
+          path: kylo-ui
+          submodules: false
+
       - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
@@ -58,11 +66,117 @@ jobs:
           validate-wrappers: false
           gradle-version: "9.6.1"
 
-      - name: Prepare language list and brand the debug build
+      - name: Integrate Kylo home screen into the engine app
         working-directory: engine
         run: |
+          set -euo pipefail
           bash ./scripts/languagelist_updater.sh
-          sed -i 's/"Amethyst (Debug)"/"Kylo Client (Engine Preview)"/g' app_pojavlauncher/build.gradle
+          mkdir -p app_pojavlauncher/src/main/assets/kylo
+          cp ../kylo-ui/index.html ../kylo-ui/style.css ../kylo-ui/app.js app_pojavlauncher/src/main/assets/kylo/
+          mkdir -p app_pojavlauncher/src/main/java/net/kdt/pojavlaunch
+          cat > app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/KyloHomeActivity.java <<'JAVA'
+          package net.kdt.pojavlaunch;
+
+          import android.app.Activity;
+          import android.content.Intent;
+          import android.graphics.Color;
+          import android.os.Bundle;
+          import android.view.Window;
+          import android.webkit.JavascriptInterface;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.widget.Toast;
+
+          public final class KyloHomeActivity extends Activity {
+              private WebView webView;
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  getWindow().setStatusBarColor(Color.rgb(9, 9, 12));
+                  getWindow().setNavigationBarColor(Color.rgb(9, 9, 12));
+                  webView = new WebView(this);
+                  webView.setBackgroundColor(Color.rgb(9, 9, 12));
+                  webView.setWebViewClient(new WebViewClient());
+                  webView.setWebChromeClient(new WebChromeClient());
+                  WebSettings settings = webView.getSettings();
+                  settings.setJavaScriptEnabled(true);
+                  settings.setDomStorageEnabled(true);
+                  settings.setAllowFileAccess(true);
+                  settings.setAllowContentAccess(false);
+                  settings.setAllowFileAccessFromFileURLs(false);
+                  settings.setAllowUniversalAccessFromFileURLs(false);
+                  webView.addJavascriptInterface(new KyloBridge(), "KyloAndroid");
+                  setContentView(webView);
+                  webView.loadUrl("file:///android_asset/kylo/index.html");
+              }
+
+              private final class KyloBridge {
+                  @JavascriptInterface
+                  public void launchMinecraft() {
+                      runOnUiThread(() -> {
+                          Toast.makeText(KyloHomeActivity.this, "Opening Minecraft launcher", Toast.LENGTH_SHORT).show();
+                          startActivity(new Intent(KyloHomeActivity.this, TestStorageActivity.class));
+                          finish();
+                      });
+                  }
+              }
+
+              @Override
+              @SuppressWarnings("deprecation")
+              public void onBackPressed() {
+                  if (webView != null) {
+                      webView.evaluateJavascript(
+                          "(function(){var p=document.querySelector('.page.active');if(p&&p.dataset.page!=='home'){var h=document.querySelector('[data-section=home]');if(h)h.click();return 'home';}return 'exit';})()",
+                          result -> { if ("\\"exit\\"".equals(result) || "null".equals(result)) finish(); }
+                      );
+                  } else {
+                      super.onBackPressed();
+                  }
+              }
+          }
+          JAVA
+          mkdir -p app_pojavlauncher/src/main/res/drawable
+          cat > app_pojavlauncher/src/main/res/drawable/ic_kylo_launcher.xml <<'XML'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="48dp" android:height="48dp" android:viewportWidth="48" android:viewportHeight="48">
+              <path android:fillColor="#09090C" android:pathData="M0,0h48v48h-48z"/>
+              <path android:fillColor="#F04452" android:pathData="M10,7h7v13l12,-13h9L25,20l14,21h-9L20,25l-3,3v13h-7z"/>
+          </vector>
+          XML
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          path = "app_pojavlauncher/src/main/AndroidManifest.xml"
+          ET.register_namespace("android", "http://schemas.android.com/apk/res/android")
+          ET.register_namespace("tools", "http://schemas.android.com/tools")
+          android = "{http://schemas.android.com/apk/res/android}"
+          tree = ET.parse(path)
+          root = tree.getroot()
+          app = root.find("application")
+          for activity in app.findall("activity"):
+              if activity.get(android + "name") == ".TestStorageActivity":
+                  for filt in list(activity.findall("intent-filter")):
+                      actions = [e.get(android + "name") for e in filt.findall("action")]
+                      cats = [e.get(android + "name") for e in filt.findall("category")]
+                      if "android.intent.action.MAIN" in actions and "android.intent.category.LAUNCHER" in cats:
+                          activity.remove(filt)
+          activity = ET.Element("activity", {
+              android + "name": ".KyloHomeActivity",
+              android + "exported": "true",
+              android + "label": "@string/app_short_name",
+              android + "configChanges": "keyboard|keyboardHidden|orientation|screenSize"
+          })
+          filt = ET.SubElement(activity, "intent-filter")
+          ET.SubElement(filt, "action", {android + "name": "android.intent.action.MAIN"})
+          ET.SubElement(filt, "category", {android + "name": "android.intent.category.LAUNCHER"})
+          app.append(activity)
+          app.set(android + "icon", "@drawable/ic_kylo_launcher")
+          app.set(android + "roundIcon", "@drawable/ic_kylo_launcher")
+          tree.write(path, encoding="utf-8", xml_declaration=True)
+          PY
+          sed -i 's/"Amethyst (Debug)"/"Kylo Client"/g' app_pojavlauncher/build.gradle
           test -d app_pojavlauncher/src/main/assets/components/jre
 
       - name: Build engine APK
