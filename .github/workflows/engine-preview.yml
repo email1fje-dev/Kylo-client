@@ -202,7 +202,20 @@ jobs:
                   val profile = Profiles.getSelectedProfile()
                   val repository = profile.repository
                   if (!repository.isLoaded) {
-                      openEngine("Loading Minecraft profile…")
+                      Toast.makeText(this, "Preparing Minecraft versions…", Toast.LENGTH_SHORT).show()
+                      val refreshTask = repository.refreshVersionsAsync()
+                      val refreshExecutor = refreshTask.executor(object : TaskListener {
+                          override fun onStop(success: Boolean, executor: TaskExecutor) {
+                              runOnUiThread {
+                                  if (success && repository.isLoaded) {
+                                      launchOrInstall(version)
+                                  } else {
+                                      webView.evaluateJavascript("window.kyloLaunchError && window.kyloLaunchError('Could not load Minecraft versions. Check your connection and try again.')", null)
+                                  }
+                              }
+                          }
+                      })
+                      refreshExecutor.start()
                       return
                   }
 
@@ -238,7 +251,7 @@ jobs:
                               } else {
                                   val error = executor.exception?.message ?: "Installation failed or was cancelled."
                                   Toast.makeText(this@KyloHomeActivity, error, Toast.LENGTH_LONG).show()
-                                  openEngine("Could not install $version. Open the engine to review the error.")
+                                  webView.evaluateJavascript("window.kyloLaunchError && window.kyloLaunchError('Could not install Minecraft $version. Check your connection and try again.')", null)
                               }
                           }
                       }
