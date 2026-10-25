@@ -1,4 +1,4 @@
-name: Build Kylo with Fold Craft Launcher
+name: Build Kylo Client with FCL Engine
 
 on:
   workflow_dispatch:
@@ -6,6 +6,9 @@ on:
     paths:
       - ".github/workflows/engine-preview.yml"
       - "ENGINE_INTEGRATION.md"
+      - "index.html"
+      - "style.css"
+      - "app.js"
 
 permissions:
   contents: read
@@ -15,12 +18,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-fcl:
-    name: Build Fold Craft Launcher for Android
+  build-kylo:
+    name: Build Kylo shell with Fold Craft Launcher engine
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     steps:
-      - name: Checkout Fold Craft Launcher source
+      - name: Checkout Fold Craft Launcher engine
         uses: actions/checkout@v4
         with:
           repository: FCL-Team/FoldCraftLauncher
@@ -28,6 +31,13 @@ jobs:
           path: fcl
           submodules: recursive
           fetch-depth: 0
+
+      - name: Checkout Kylo client shell
+        uses: actions/checkout@v4
+        with:
+          repository: email1fje-dev/Kylo-client
+          ref: main
+          path: kylo
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -37,7 +47,130 @@ jobs:
           cache: gradle
           cache-dependency-path: fcl/**/*.gradle*
 
-      - name: Build Fold Craft Launcher debug APK for ARM64
+      - name: Integrate Kylo home screen into FCL app
+        working-directory: fcl
+        run: |
+          set -euo pipefail
+          mkdir -p FCL/src/main/assets/kylo/www
+          cp ../kylo/index.html ../kylo/style.css ../kylo/app.js FCL/src/main/assets/kylo/www/
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          base = Path("FCL/src/main")
+          manifest = base / "AndroidManifest.xml"
+          xml = manifest.read_text()
+          activity = '''
+                  <activity
+                      android:name=".activity.KyloHomeActivity"
+                      android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|keyboard|navigation|uiMode"
+                      android:screenOrientation="sensorPortrait"
+                      android:exported="false"
+                      android:windowSoftInputMode="adjustResize" />
+          '''
+          marker = '        <activity\n            android:name=".activity.MainActivity"'
+          if "android:name=\".activity.KyloHomeActivity\"" not in xml:
+              if marker not in xml:
+                  raise SystemExit("Could not find MainActivity manifest entry")
+              xml = xml.replace(marker, activity + "\n" + marker, 1)
+              manifest.write_text(xml)
+
+          splash = base / "java/com/tungsten/fcl/activity/SplashActivity.kt"
+          source = splash.read_text()
+          old = "Intent(this@SplashActivity, MainActivity::class.java)"
+          if old not in source:
+              raise SystemExit("Could not find FCL launcher transition in SplashActivity")
+          source = source.replace(old, "Intent(this@SplashActivity, KyloHomeActivity::class.java)", 1)
+          splash.write_text(source)
+
+          strings = base / "res/values/strings.xml"
+          text = strings.read_text()
+          text = re.sub(r'(<string name="app_name"[^>]*>).*?(</string>)',
+                        r'\1Kylo Client\2', text, count=1)
+          strings.write_text(text)
+          PY
+
+          cat > FCL/src/main/java/com/tungsten/fcl/activity/KyloHomeActivity.kt <<'KOTLIN'
+          package com.tungsten.fcl.activity
+
+          import android.annotation.SuppressLint
+          import android.app.Activity
+          import android.content.Intent
+          import android.graphics.Color
+          import android.os.Bundle
+          import android.view.WindowManager
+          import android.webkit.JavascriptInterface
+          import android.webkit.WebChromeClient
+          import android.webkit.WebSettings
+          import android.webkit.WebView
+          import android.webkit.WebViewClient
+          import android.widget.Toast
+
+          class KyloHomeActivity : Activity() {
+              private lateinit var webView: WebView
+
+              @SuppressLint("SetJavaScriptEnabled")
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  window.statusBarColor = Color.rgb(9, 9, 12)
+                  window.navigationBarColor = Color.rgb(9, 9, 12)
+                  window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+
+                  webView = WebView(this)
+                  webView.setBackgroundColor(Color.rgb(9, 9, 12))
+                  webView.webViewClient = WebViewClient()
+                  webView.webChromeClient = WebChromeClient()
+                  webView.settings.apply {
+                      javaScriptEnabled = true
+                      domStorageEnabled = true
+                      allowFileAccess = true
+                      allowContentAccess = false
+                      loadsImagesAutomatically = true
+                      cacheMode = WebSettings.LOAD_DEFAULT
+                  }
+                  webView.addJavascriptInterface(KyloBridge(), "KyloAndroid")
+                  setContentView(webView)
+                  webView.loadUrl("file:///android_asset/kylo/www/index.html")
+              }
+
+              inner class KyloBridge {
+                  @JavascriptInterface
+                  fun launchMinecraft(version: String?) {
+                      runOnUiThread {
+                          val selected = version?.takeIf { it.matches(Regex("[0-9]+\\.[0-9]+(\\.[0-9]+)?")) }
+                          val intent = Intent(this@KyloHomeActivity, MainActivity::class.java)
+                          if (selected != null) intent.putExtra("kylo_selected_version", selected)
+                          Toast.makeText(
+                              this@KyloHomeActivity,
+                              "Kylo engine opened. Select/install the game version in the engine to continue.",
+                              Toast.LENGTH_LONG
+                          ).show()
+                          startActivity(intent)
+                      }
+                  }
+              }
+
+              override fun onSaveInstanceState(outState: Bundle) {
+                  webView.saveState(outState)
+                  super.onSaveInstanceState(outState)
+              }
+          }
+          KOTLIN
+
+          # Keep the first-launch copy honest: the engine is present, but version auto-install is not wired yet.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("FCL/src/main/assets/kylo/www/index.html")
+          s = p.read_text()
+          s = s.replace("DISPLAY NAME (PREVIEW ONLY)", "DISPLAY NAME")
+          s = s.replace("OPEN MINECRAFT LAUNCHER", "LAUNCH MINECRAFT")
+          s = s.replace("Play opens the Minecraft launcher in the Android build.", "LAUNCH opens the built-in Minecraft engine.")
+          s = s.replace("This changes the launcher selection only; the game engine is not connected yet.", "Your selected profile is saved in Kylo. Install or select the matching version in the engine if it is not ready yet.")
+          p.write_text(s)
+          PY
+
+      - name: Build Kylo Android APK for ARM64
         working-directory: fcl
         env:
           CURSE_API_KEY: DUMMY
@@ -50,17 +183,17 @@ jobs:
       - name: Verify APK
         run: |
           set -euo pipefail
-          find fcl/FCL/build/outputs/apk -type f -name '*.apk' -print -exec ls -lh {} \;
           APK="$(find fcl/FCL/build/outputs/apk -type f -name '*.apk' | head -n 1)"
           test -n "$APK"
           test -s "$APK"
           unzip -t "$APK" >/dev/null
           unzip -l "$APK" | grep -Fq 'classes.dex'
+          unzip -p "$APK" AndroidManifest.xml >/dev/null
 
-      - name: Upload Fold Craft Launcher APK
+      - name: Upload Kylo Client APK
         uses: actions/upload-artifact@v4
         with:
-          name: Kylo-FoldCraft-Engine-ARM64
+          name: Kylo-Client-ARM64
           path: fcl/FCL/build/outputs/apk/**/*.apk
           if-no-files-found: error
           retention-days: 14
