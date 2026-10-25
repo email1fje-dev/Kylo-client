@@ -226,7 +226,7 @@ jobs:
                       .name(version)
                       .gameVersion(version)
                       .buildAsync()
-                      .whenComplete { _, _ -> profile.repository.refreshVersions() }
+                      .whenComplete { profile.repository.refreshVersions() }
 
                   val dialog = TaskDialog(this, TaskCancellationAction.NORMAL)
                   dialog.setTitle("Installing Minecraft $version")
