@@ -1,29 +1,29 @@
-# Kylo Launcher
+# Kylo Client
 
-A mobile-first black-and-red launcher UI prototype for the future Kylo Client project.
+A mobile-first black-and-red Kylo Client interface, packaged as an Android WebView app with an automatic GitHub Actions APK build.
 
 ## Current scope
-- Mobile responsive launcher home screen
+- Mobile-responsive launcher home screen
 - Minecraft Java 1.8.9 shown as the target version
 - Offline username field with basic format validation
-- Settings dialog
-- Black/red visual theme
+- Settings and a 30-feature customization preview
+- Black/red theme with motion effects
+- Android WebView wrapper in `app/`
+- GitHub Actions workflow that builds a debug APK on every push to `main` or manually
 
 ## Important status
-This repository currently contains a **UI prototype only**. It does not install or launch Minecraft, authenticate Microsoft accounts, or provide an Android APK yet.
+The APK packages the launcher interface. It does **not** install or launch Minecraft, authenticate Microsoft accounts, or run the preview mod toggles inside the game. A compatible Java runtime, game assets, secure official authentication, and real mod implementations are separate work.
 
 ## Preview on a phone
-Open `index.html` in a browser, or enable GitHub Pages for this repository:
-1. Open **Settings** in the repository.
-2. Open **Pages** under Code and automation.
-3. Select the `main` branch and `/(root)`, then save.
-4. Open the published Pages URL after GitHub finishes deploying.
+Open the [Kylo Client GitHub Pages preview](https://email1fje-dev.github.io/Kylo-client/) in a browser.
 
-## Roadmap
-1. Build and test the mobile UI.
-2. Decide on a compatible Android Java Edition runtime and integrate it lawfully.
-3. Add supported account authentication and safe local profile handling.
-4. Build the Android package with a CI workflow.
-5. Develop the separate Minecraft 1.8.9 client modifications.
+## Build and download the Android APK
+1. Open the repository's **Actions** tab.
+2. Select **Build Kylo Client Android APK**.
+3. Choose **Run workflow**, or push a commit to `main`.
+4. Open the completed run and download the `Kylo-Client-Android-APK` artifact.
+5. Extract the ZIP to get `app-debug.apk` and install it on Android. You may need to allow installs from the app used to open the APK.
+
+The workflow automatically copies the root `index.html`, `style.css`, and `app.js` into Android assets before compiling.
 
 Kylo is an independent community project and is not affiliated with Mojang or Microsoft.
