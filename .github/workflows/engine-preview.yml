@@ -1,14 +1,8 @@
 name: Build Kylo Client with FCL Engine
 
 on:
+  workflow_call:
   workflow_dispatch:
-  push:
-    paths:
-      - ".github/workflows/engine-preview.yml"
-      - "ENGINE_INTEGRATION.md"
-      - "index.html"
-      - "style.css"
-      - "app.js"
 
 permissions:
   contents: read
