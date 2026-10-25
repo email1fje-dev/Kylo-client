@@ -51,7 +51,7 @@ class MainActivity : Activity() {
             "(function(){var active=document.querySelector('.page.active');if(active&&active.dataset.page!=='home'){var home=document.querySelector('[data-section=home]');if(home)home.click();return 'home';}return 'exit';})()"
         ) { result ->
             if (result == "\"exit\"" || result == "null") {
-                super@MainActivity.onBackPressed()
+                finish()
             }
         }
     }
