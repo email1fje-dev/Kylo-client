@@ -198,7 +198,7 @@ jobs:
                   if (!repository.isLoaded) {
                       Toast.makeText(this, "Preparing Minecraft versions…", Toast.LENGTH_SHORT).show()
                       val refreshTask = repository.refreshVersionsAsync()
-                      val refreshExecutor = refreshTask.executor(object : TaskListener {
+                      val refreshExecutor = refreshTask.executor(object : TaskListener() {
                           override fun onStop(success: Boolean, executor: TaskExecutor) {
                               runOnUiThread {
                                   if (success && repository.isLoaded) {
@@ -226,15 +226,11 @@ jobs:
                       .name(version)
                       .gameVersion(version)
                       .buildAsync()
-                      .whenComplete { profile.repository.refreshVersions() }
-                      .thenRunAsync(Schedulers.androidUIThread()) {
-                          val current = Profiles.getSelectedProfile()
-                          current.selectedVersion = version
-                      }
+                      .whenComplete { _, _ -> profile.repository.refreshVersions() }
 
                   val dialog = TaskDialog(this, TaskCancellationAction.NORMAL)
                   dialog.setTitle("Installing Minecraft $version")
-                  val executor: TaskExecutor = task.executor(object : TaskListener {
+                  val executor: TaskExecutor = task.executor(object : TaskListener() {
                       override fun onStop(success: Boolean, executor: TaskExecutor) {
                           runOnUiThread {
                               if (success) {
