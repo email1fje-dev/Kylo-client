@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0b0e">
+<title>Kylo Launcher</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <div class="brand"><span class="mark">K</span><div><strong>KYLO</strong><small>LAUNCHER</small></div></div>
+    <button class="icon-btn" id="settingsButton" aria-label="Open settings">⚙</button>
+  </header>
+  <section class="hero">
+    <div class="eyebrow"><span class="dot"></span> JAVA EDITION · MOBILE</div>
+    <h1>YOUR GAME.<br><span>YOUR RULES.</span></h1>
+    <p>A custom home for your Minecraft sessions.</p>
+    <div class="version-card">
+      <div class="cube">K</div><div class="version-copy"><small>SELECTED VERSION</small><strong>Minecraft 1.8.9</strong><span>BedWars profile</span></div>
+      <span class="chevron">⌄</span>
+    </div>
+    <label class="field-label" for="username">OFFLINE USERNAME</label>
+    <input id="username" maxlength="16" autocomplete="nickname" placeholder="Enter username" value="">
+    <button class="play-button" id="playButton"><span>▶</span> PLAY <b>↗</b></button>
+    <p class="notice" id="status" role="status">Launcher UI preview · game engine not connected yet.</p>
+  </section>
+  <section class="quick-grid">
+    <article class="tile"><span class="tile-icon">▤</span><div><strong>VERSION</strong><small>1.8.9 selected</small></div></article>
+    <article class="tile"><span class="tile-icon">◉</span><div><strong>ACCOUNT</strong><small id="accountLabel">Offline profile</small></div></article>
+  </section>
+  <section class="bottom-card"><div><small>BUILT FOR</small><h2>BEDWARS READY</h2><p>Your PvP setup starts here.</p></div><span class="red-line"></span></section>
+  <footer>KYLO CLIENT <span>•</span> EARLY ACCESS</footer>
+</main>
+<dialog id="settingsDialog"><form method="dialog"><button class="close" aria-label="Close">×</button><p class="eyebrow">PREFERENCES</p><h2>Launcher settings</h2><p>Version: Minecraft Java 1.8.9</p><p>Theme: Black / Red</p><p class="muted">Memory and game launch controls will be added when the Android game engine is integrated.</p><button class="play-button">DONE</button></form></dialog>
+<script src="app.js"></script>
+</body>
+</html>
