@@ -52,15 +52,29 @@
   </section>
 
   <section class="page" id="page-mods" data-page="mods">
-    <div class="page-heading"><p class="eyebrow">CUSTOMIZE YOUR CLIENT</p><h1>CLIENT <span>MODS</span></h1><p>Toggle the mods you want in your planned profile. These switches are saved on this device; they don't install files yet.</p></div>
-    <div class="option-list">
-      <label class="mod-option"><span class="mod-symbol">FPS</span><span class="mod-copy"><strong>FPS Display</strong><small>Show a planned FPS counter</small></span><input type="checkbox" class="switch" data-mod="FPS Display" checked></label>
-      <label class="mod-option"><span class="mod-symbol">CPS</span><span class="mod-copy"><strong>CPS Counter</strong><small>Clicks per second overlay</small></span><input type="checkbox" class="switch" data-mod="CPS Counter" checked></label>
-      <label class="mod-option"><span class="mod-symbol">HUD</span><span class="mod-copy"><strong>Minimal HUD</strong><small>Keep the game view clean</small></span><input type="checkbox" class="switch" data-mod="Minimal HUD"></label>
-      <label class="mod-option"><span class="mod-symbol">SPL</span><span class="mod-copy"><strong>Sprint Toggle</strong><small>Planned PvP convenience toggle</small></span><input type="checkbox" class="switch" data-mod="Sprint Toggle"></label>
+    <div class="page-heading"><p class="eyebrow"><span class="dot"></span> KYLO CUSTOMIZATION LAB</p><h1>MAKE IT <span>YOURS.</span></h1><p>Build your PvP setup with toggles, presets, search and per-mod settings.</p></div>
+    <div class="mods-banner"><div><span class="live-dot"></span><strong id="modsCount">2 / 30 ENABLED</strong><small>YOUR CLIENT CONFIG</small></div><span class="banner-mark">K</span></div>
+    <div class="mods-tools">
+      <label class="search-wrap"><span>⌕</span><input id="modSearch" type="search" placeholder="Search mods..." autocomplete="off"></label>
+      <div class="category-row" id="modCategories">
+        <button class="category-chip active" data-category="All">All mods</button><button class="category-chip" data-category="HUD">HUD</button><button class="category-chip" data-category="PvP">PvP</button><button class="category-chip" data-category="Performance">Performance</button><button class="category-chip" data-category="Visuals">Visuals</button><button class="category-chip" data-category="Quality of Life">Quality of Life</button>
+      </div>
     </div>
-    <p class="notice" id="modsStatus" role="status">2 planned mods enabled.</p>
+    <div class="preset-heading"><span>QUICK PRESETS</span><small>One tap setup</small></div>
+    <div class="preset-row"><button class="preset-button active" data-preset="BedWars"><span>⚔</span><strong>BedWars</strong><small>Competitive PvP</small></button><button class="preset-button" data-preset="Performance"><span>ϟ</span><strong>FPS Boost</strong><small>Lean setup</small></button><button class="preset-button" data-preset="Minimal"><span>◈</span><strong>Minimal</strong><small>Clean screen</small></button></div>
+    <div class="mods-list-heading"><strong>MOD LIBRARY</strong><span id="modResults">30 FEATURES</span></div>
+    <div class="mods-grid" id="modsGrid"></div>
+    <p class="notice" id="modsStatus" role="status">Configuration saves on this device. Game integration is not connected.</p>
+    <div class="info-card"><strong>Preview vs. real mods</strong><p>These are interactive client configuration options. They do not install code into Minecraft yet. The native Java client and compatible mod implementations are needed before these features can affect gameplay.</p></div>
   </section>
+
+  <dialog id="modDetailsDialog">
+    <form method="dialog" id="modDetailsForm">
+      <button class="close" aria-label="Close">×</button><p class="eyebrow">FEATURE CONFIGURATION</p><h2 id="detailTitle">Mod settings</h2><p id="detailDescription" class="detail-description"></p>
+      <div id="detailControls" class="detail-controls"></div>
+      <button type="button" class="play-button" id="saveModDetails">SAVE SETTINGS</button>
+    </form>
+  </dialog>
 
   <section class="page" id="page-accounts" data-page="accounts">
     <div class="page-heading"><p class="eyebrow">PLAYER IDENTITY</p><h1>YOUR <span>ACCOUNT</span></h1><p>Set an offline display name for the preview, or see the status of official sign-in.</p></div>
