@@ -4,6 +4,8 @@
     <application
         android:allowBackup="true"
         android:label="Kylo Client"
+        android:icon="@drawable/ic_kylo_launcher"
+        android:roundIcon="@drawable/ic_kylo_launcher"
         android:usesCleartextTraffic="false"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:hardwareAccelerated="true">
