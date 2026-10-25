@@ -205,10 +205,14 @@ username.addEventListener("change",() => {
 });
 $("#playButton").addEventListener("click",() => {
   const value=username.value.trim();
-  if(!value){status.textContent="Enter an offline username first.";username.focus();return;}
-  if(!validUsername(value)){status.textContent="Use 3–16 letters, numbers, or underscores.";username.focus();return;}
-  state.username=value;syncAccount();saveState();
-  status.textContent="Profile ready: "+value+" · "+state.version+". The Minecraft engine is not connected, so the game cannot launch yet.";
+  if(value&&!validUsername(value)){status.textContent="Use 3–16 letters, numbers, or underscores.";username.focus();return;}
+  if(value){state.username=value;syncAccount();saveState();}
+  if(window.KyloAndroid&&typeof window.KyloAndroid.launchMinecraft==="function"){
+    status.textContent="Opening Minecraft engine…";
+    window.KyloAndroid.launchMinecraft(state.version);
+    return;
+  }
+  status.textContent="Preview mode · the Minecraft engine is not connected in this browser.";
 });
 $("#saveAccount").addEventListener("click",saveOfflineProfile);
 $("#microsoftButton").addEventListener("click",() => { $("#accountStatus").textContent="Microsoft sign-in isn't connected in this preview. Official authentication needs a secure native/backend integration; don't enter your Microsoft password here."; });
