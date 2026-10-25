@@ -29,10 +29,9 @@
       <button class="version-card card-button" id="openVersions">
         <span class="cube">K</span><span class="version-copy"><small>SELECTED VERSION</small><strong id="homeVersion">Minecraft 1.8.9</strong><span id="homeProfile">BedWars profile</span></span><span class="chevron">⌄</span>
       </button>
-      <label class="field-label" for="username">DISPLAY NAME (PREVIEW ONLY)</label>
-      <input id="username" maxlength="16" autocomplete="nickname" placeholder="Optional display name">
-      <button class="play-button" id="playButton"><span>▶</span> OPEN MINECRAFT LAUNCHER <b>↗</b></button>
-      <p class="notice" id="status" role="status">Play opens the Minecraft launcher in the Android build.</p>
+      <div class="selected-account-row"><span class="field-label">ACTIVE ACCOUNT</span><strong id="homeAccountStatus">No account selected</strong><button class="text-button" type="button" id="homeAccountsButton">CHOOSE ACCOUNT ↗</button></div>
+      <button class="play-button" id="playButton"><span>▶</span> LAUNCH MINECRAFT <b>↗</b></button>
+      <p class="notice" id="status" role="status">Launches the selected Minecraft version using the built-in engine.</p>
     </div>
     <section class="quick-grid">
       <article class="tile"><span class="tile-icon">▤</span><div><strong>VERSION</strong><small id="versionSummary">1.8.9 selected</small></div></article>
@@ -42,13 +41,13 @@
   </section>
 
   <section class="page" id="page-versions" data-page="versions">
-    <div class="page-heading"><p class="eyebrow">GAME SETUP</p><h1>CHOOSE <span>VERSION</span></h1><p>Select a profile for your setup. This changes the launcher selection only; the game engine is not connected yet.</p></div>
+    <div class="page-heading"><p class="eyebrow">GAME SETUP</p><h1>CHOOSE <span>VERSION</span></h1><p>Choose the Minecraft version you want Kylo to install or launch.</p></div>
     <div class="option-list" id="versionOptions">
       <button class="option selected" data-version="1.8.9" data-profile="BedWars profile"><span class="option-icon">⚔</span><span><strong>Minecraft 1.8.9</strong><small>Classic PvP · BedWars</small></span><span class="option-check">✓</span></button>
       <button class="option" data-version="1.12.2" data-profile="Classic profile"><span class="option-icon">◆</span><span><strong>Minecraft 1.12.2</strong><small>Classic servers and mods</small></span><span class="option-check">✓</span></button>
       <button class="option" data-version="1.20.1" data-profile="Modern profile"><span class="option-icon">✧</span><span><strong>Minecraft 1.20.1</strong><small>Modern gameplay profile</small></span><span class="option-check">✓</span></button>
     </div>
-    <div class="info-card"><strong>Heads up</strong><p>Choosing a version saves it in this page session. Downloading game files and launching Minecraft require a compatible Java runtime and game engine, which are not integrated in this web preview.</p></div>
+    <div class="info-card"><strong>Heads up</strong><p>Kylo uses the built-in Fold Craft engine to install missing game files and launch the selected version.</p></div>
   </section>
 
   <section class="page" id="page-mods" data-page="mods">
@@ -77,13 +76,13 @@
   </dialog>
 
   <section class="page" id="page-accounts" data-page="accounts">
-    <div class="page-heading"><p class="eyebrow">PLAYER IDENTITY</p><h1>YOUR <span>ACCOUNT</span></h1><p>Set an offline display name for the preview, or see the status of official sign-in.</p></div>
-    <div class="account-card"><span class="avatar">K</span><div><small>ACTIVE PROFILE</small><h2 id="accountName">Offline profile</h2><p id="accountType">Offline username · not authenticated</p></div></div>
-    <label class="field-label" for="accountUsername">OFFLINE USERNAME</label>
-    <input id="accountUsername" maxlength="16" placeholder="3–16 letters, numbers, underscores">
-    <button class="play-button" id="saveAccount">SAVE OFFLINE PROFILE</button>
-    <button class="secondary-button" id="microsoftButton">Sign in with Microsoft <span>↗</span></button>
-    <p class="notice" id="accountStatus" role="status">Offline profiles only work where offline-mode access is supported.</p>
+    <div class="page-heading"><p class="eyebrow">PLAYER IDENTITY</p><h1>YOUR <span>ACCOUNT</span></h1><p>Choose an account already saved in Fold Craft Launcher, or open its account manager to add one.</p></div>
+    <div class="account-card"><span class="avatar">K</span><div><small>ACTIVE ACCOUNT</small><h2 id="accountName">No account selected</h2><p id="accountType">Select an account to play</p></div></div>
+    <label class="field-label" for="accountSelect">SAVED ACCOUNTS</label>
+    <select id="accountSelect" class="account-select"><option value="">No account selected</option></select>
+    <button class="play-button" id="selectAccountButton">SELECT ACCOUNT</button>
+    <button class="secondary-button" id="manageAccountsButton">ADD / MANAGE ACCOUNTS IN FOLD CRAFT <span>↗</span></button>
+    <p class="notice" id="accountStatus" role="status">The selected account is saved by Fold Craft Launcher and used when Kylo launches Minecraft.</p>
   </section>
 
   <section class="page" id="page-settings" data-page="settings">
