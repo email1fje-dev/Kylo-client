@@ -181,34 +181,17 @@ jobs:
           app.set(android + "roundIcon", "@drawable/ic_kylo_launcher")
           tree.write(path, encoding="utf-8", xml_declaration=True)
           PY
-          # Apply Kylo's selected version to the engine's active Minecraft profile.
+          # Default the native engine profile to the requested Minecraft 1.8.9 version.
           python3 - <<'PY'
           from pathlib import Path
           p = Path("app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/LauncherActivity.java")
           s = p.read_text()
-          needle = "        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_pojav_launcher);"
-          replacement = '''        super.onCreate(savedInstanceState);
-        // Consume the version selected on Kylo's home screen before building the launcher UI.
-        String kyloVersion = getSharedPreferences("kylo-client", MODE_PRIVATE).getString("selected_version", "1.8.9");
-        if (kyloVersion == null || !kyloVersion.matches("[0-9]+\\\\.[0-9]+(\\\\.[0-9]+)?")) kyloVersion = "1.8.9";
-        LauncherProfiles.load();
-        String kyloProfileKey = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, "");
-        if (kyloProfileKey == null || !LauncherProfiles.mainProfileJson.profiles.containsKey(kyloProfileKey)) {
-            kyloProfileKey = LauncherProfiles.mainProfileJson.profiles.keySet().iterator().next();
-            LauncherPreferences.DEFAULT_PREF.edit().putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, kyloProfileKey).apply();
-        }
-        MinecraftProfile kyloProfile = LauncherProfiles.mainProfileJson.profiles.get(kyloProfileKey);
-        if (kyloProfile != null && !kyloVersion.equals(kyloProfile.lastVersionId)) {
-            kyloProfile.lastVersionId = kyloVersion;
-            LauncherProfiles.write();
-        }
-        getSharedPreferences("kylo-client", MODE_PRIVATE).edit().remove("selected_version").apply();
-        setContentView(R.layout.activity_pojav_launcher);'''
+          needle = "        setContentView(R.layout.activity_pojav_launcher);"
+          injected = '        LauncherProfiles.load();\n        String kyloKey = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, "");\n        if (kyloKey == null || !LauncherProfiles.mainProfileJson.profiles.containsKey(kyloKey)) { kyloKey = LauncherProfiles.mainProfileJson.profiles.keySet().iterator().next(); LauncherPreferences.DEFAULT_PREF.edit().putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, kyloKey).apply(); }\n        MinecraftProfile kyloProfile = LauncherProfiles.mainProfileJson.profiles.get(kyloKey);\n        if (kyloProfile != null && !"1.8.9".equals(kyloProfile.lastVersionId)) { kyloProfile.lastVersionId = "1.8.9"; LauncherProfiles.write(); }\n' + needle
           if needle not in s:
-              raise SystemExit("Could not find LauncherActivity onCreate insertion point")
-          s = s.replace(needle, replacement, 1)
+              raise SystemExit("Could not find LauncherActivity insertion point")
+          s = s.replace(needle, injected, 1)
           p.write_text(s)
-          # The default profile should also be 1.8.9 on a clean install.
           p = Path("app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/value/launcherprofiles/MinecraftProfile.java")
           s = p.read_text().replace('defaultProfile.lastVersionId = "1.7.10";', 'defaultProfile.lastVersionId = "1.8.9";')
           p.write_text(s)
