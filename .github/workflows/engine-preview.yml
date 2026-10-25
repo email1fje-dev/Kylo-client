@@ -108,6 +108,9 @@ jobs:
           import android.widget.Toast
           import androidx.appcompat.app.AppCompatDialog
           import com.tungsten.fcl.setting.Profiles
+          import com.tungsten.fcl.setting.Accounts
+          import org.json.JSONArray
+          import org.json.JSONObject
           import com.tungsten.fcl.ui.TaskDialog
           import com.tungsten.fcl.ui.version.Versions
           import com.tungsten.fcl.util.TaskCancellationAction
@@ -146,6 +149,33 @@ jobs:
 
               inner class KyloBridge {
                   @JavascriptInterface
+                  fun getAccounts(): String {
+                      val result = JSONArray()
+                      val selected = Accounts.getSelectedAccount()
+                      Accounts.getAccounts().forEachIndexed { index, account ->
+                          result.put(JSONObject().put("index", index)
+                              .put("name", account.character ?: account.username ?: "Minecraft account")
+                              .put("selected", account == selected))
+                      }
+                      return result.toString()
+                  }
+
+                  @JavascriptInterface
+                  fun selectAccount(index: Int): Boolean {
+                      val accounts = Accounts.getAccounts()
+                      if (index < 0 || index >= accounts.size) return false
+                      Accounts.setSelectedAccount(accounts[index])
+                      return Accounts.getSelectedAccount() == accounts[index]
+                  }
+
+                  @JavascriptInterface
+                  fun openAccountManager() {
+                      runOnUiThread {
+                          startActivity(Intent(this@KyloHomeActivity, MainActivity::class.java))
+                      }
+                  }
+
+                  @JavascriptInterface
                   fun launchMinecraft(version: String?) {
                       val selected = version?.takeIf { it.matches(Regex("[0-9]+\\.[0-9]+(\\.[0-9]+)?")) }
                           ?: "1.8.9"
@@ -154,6 +184,10 @@ jobs:
               }
 
               private fun launchOrInstall(version: String) {
+                  if (Accounts.getSelectedAccount() == null) {
+                      webView.evaluateJavascript("window.kyloAccountRequired && window.kyloAccountRequired()", null)
+                      return
+                  }
                   val profile = Profiles.getSelectedProfile()
                   val repository = profile.repository
                   if (!repository.isLoaded) {
@@ -206,6 +240,13 @@ jobs:
               private fun openEngine(message: String) {
                   Toast.makeText(this, message, Toast.LENGTH_LONG).show()
                   startActivity(Intent(this, MainActivity::class.java))
+              }
+
+              override fun onResume() {
+                  super.onResume()
+                  if (::webView.isInitialized) {
+                      webView.postDelayed({ webView.evaluateJavascript("window.refreshKyloAccounts && window.refreshKyloAccounts()", null) }, 250)
+                  }
               }
 
               override fun onSaveInstanceState(outState: Bundle) {
