@@ -225,12 +225,6 @@ $("#settingsButton").addEventListener("click",() => showSection("settings"));
 $$(".tab").forEach(tab => tab.addEventListener("click",() => showSection(tab.dataset.section)));
 $("#openVersions").addEventListener("click",() => showSection("versions"));
 $$(".option[data-version]").forEach(option => option.addEventListener("click",() => { state.version=option.dataset.version; state.profile=option.dataset.profile; syncVersion(); saveState(); }));
-username.addEventListener("input",() => { const value=username.value.trim(); accountLabel.textContent=value||"Offline profile"; if(accountUsername.value!==username.value) accountUsername.value=username.value; });
-username.addEventListener("change",() => {
-  const value=username.value.trim();
-  if(value&&!validUsername(value)){status.textContent="Use 3–16 letters, numbers, or underscores.";return;}
-  state.username=value;syncAccount();saveState();
-});
 $("#playButton").addEventListener("click",() => {
   if (window.KyloAndroid && typeof window.KyloAndroid.launchMinecraft === "function") {
     if (!nativeAccounts.some(account => account.selected)) {
