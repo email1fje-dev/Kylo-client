@@ -106,6 +106,16 @@ jobs:
           import android.webkit.WebView
           import android.webkit.WebViewClient
           import android.widget.Toast
+          import androidx.appcompat.app.AppCompatDialog
+          import com.tungsten.fcl.setting.Profiles
+          import com.tungsten.fcl.ui.TaskDialog
+          import com.tungsten.fcl.ui.version.Versions
+          import com.tungsten.fcl.util.TaskCancellationAction
+          import com.tungsten.fclcore.download.GameBuilder
+          import com.tungsten.fclcore.task.Schedulers
+          import com.tungsten.fclcore.task.Task
+          import com.tungsten.fclcore.task.TaskExecutor
+          import com.tungsten.fclcore.task.TaskListener
 
           class KyloHomeActivity : Activity() {
               private lateinit var webView: WebView
@@ -137,18 +147,65 @@ jobs:
               inner class KyloBridge {
                   @JavascriptInterface
                   fun launchMinecraft(version: String?) {
-                      runOnUiThread {
-                          val selected = version?.takeIf { it.matches(Regex("[0-9]+\\.[0-9]+(\\.[0-9]+)?")) }
-                          val intent = Intent(this@KyloHomeActivity, MainActivity::class.java)
-                          if (selected != null) intent.putExtra("kylo_selected_version", selected)
-                          Toast.makeText(
-                              this@KyloHomeActivity,
-                              "Kylo engine opened. Select/install the game version in the engine to continue.",
-                              Toast.LENGTH_LONG
-                          ).show()
-                          startActivity(intent)
-                      }
+                      val selected = version?.takeIf { it.matches(Regex("[0-9]+\\.[0-9]+(\\.[0-9]+)?")) }
+                          ?: "1.8.9"
+                      runOnUiThread { launchOrInstall(selected) }
                   }
+              }
+
+              private fun launchOrInstall(version: String) {
+                  val profile = Profiles.getSelectedProfile()
+                  val repository = profile.repository
+                  if (!repository.isLoaded) {
+                      openEngine("Loading Minecraft profile…")
+                      return
+                  }
+
+                  if (repository.hasVersion(version)) {
+                      profile.setSelectedVersion(version)
+                      Toast.makeText(this, "Launching Minecraft $version…", Toast.LENGTH_SHORT).show()
+                      Versions.launch(this, profile, version)
+                      return
+                  }
+
+                  // Use FCL's own dependency manager and task system so Minecraft libraries,
+                  // version metadata, assets and game files are installed by the engine itself.
+                  val task: Task<Void> = profile.dependency.gameBuilder()
+                      .name(version)
+                      .gameVersion(version)
+                      .buildAsync()
+                      .whenComplete { profile.repository.refreshVersions() }
+                      .thenRunAsync(Schedulers.androidUIThread()) {
+                          val current = Profiles.getSelectedProfile()
+                          current.setSelectedVersion(version)
+                      }
+
+                  val dialog = TaskDialog(this, TaskCancellationAction(AppCompatDialog::dismiss))
+                  dialog.setTitle("Installing Minecraft $version")
+                  val executor: TaskExecutor = task.executor(object : TaskListener {
+                      override fun onStop(success: Boolean, executor: TaskExecutor) {
+                          runOnUiThread {
+                              if (success) {
+                                  val current = Profiles.getSelectedProfile()
+                                  current.setSelectedVersion(version)
+                                  Toast.makeText(this@KyloHomeActivity, "Minecraft $version installed. Launching…", Toast.LENGTH_LONG).show()
+                                  Versions.launch(this@KyloHomeActivity, current, version)
+                              } else {
+                                  val error = executor.exception?.message ?: "Installation failed or was cancelled."
+                                  Toast.makeText(this@KyloHomeActivity, error, Toast.LENGTH_LONG).show()
+                                  openEngine("Could not install $version. Open the engine to review the error.")
+                              }
+                          }
+                      }
+                  })
+                  dialog.setExecutor(executor)
+                  dialog.show()
+                  executor.start()
+              }
+
+              private fun openEngine(message: String) {
+                  Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+                  startActivity(Intent(this, MainActivity::class.java))
               }
 
               override fun onSaveInstanceState(outState: Bundle) {
@@ -158,7 +215,7 @@ jobs:
           }
           KOTLIN
 
-          # Keep the first-launch copy honest: the engine is present, but version auto-install is not wired yet.
+          # Update copy for the native version install/launch bridge.
           python3 - <<'PY'
           from pathlib import Path
           p = Path("FCL/src/main/assets/kylo/www/index.html")
@@ -166,7 +223,7 @@ jobs:
           s = s.replace("DISPLAY NAME (PREVIEW ONLY)", "DISPLAY NAME")
           s = s.replace("OPEN MINECRAFT LAUNCHER", "LAUNCH MINECRAFT")
           s = s.replace("Play opens the Minecraft launcher in the Android build.", "LAUNCH opens the built-in Minecraft engine.")
-          s = s.replace("This changes the launcher selection only; the game engine is not connected yet.", "Your selected profile is saved in Kylo. Install or select the matching version in the engine if it is not ready yet.")
+          s = s.replace("This changes the launcher selection only; the game engine is not connected yet.", "Kylo checks the selected version, installs it through the built-in engine when missing, then launches it.")
           p.write_text(s)
           PY
 
