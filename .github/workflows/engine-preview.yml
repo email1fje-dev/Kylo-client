@@ -26,7 +26,7 @@ jobs:
           repository: AngelAuraMC/Amethyst-Android
           ref: v3_openjdk
           path: engine
-          submodules: recursive
+          submodules: false
           fetch-depth: 0
 
       - name: Configure HTTPS for public submodules
