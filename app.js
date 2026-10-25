@@ -209,7 +209,7 @@ $("#playButton").addEventListener("click",() => {
   if(value){state.username=value;syncAccount();saveState();}
   if(window.KyloAndroid&&typeof window.KyloAndroid.launchMinecraft==="function"){
     status.textContent="Opening Minecraft engine…";
-    window.KyloAndroid.launchMinecraft(state.version);
+    window.KyloAndroid.launchMinecraft();
     return;
   }
   status.textContent="Preview mode · the Minecraft engine is not connected in this browser.";
