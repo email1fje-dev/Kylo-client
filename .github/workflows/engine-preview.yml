@@ -133,7 +133,7 @@ jobs:
                   if (webView != null) {
                       webView.evaluateJavascript(
                           "(function(){var p=document.querySelector('.page.active');if(p&&p.dataset.page!=='home'){var h=document.querySelector('[data-section=home]');if(h)h.click();return 'home';}return 'exit';})()",
-                          result -> { if ("\\\"exit\\\"".equals(result) || "null".equals(result)) finish(); }
+                          result -> { if ((result != null && result.contains("exit")) || "null".equals(result)) finish(); }
                       );
                   } else {
                       super.onBackPressed();
