@@ -50,7 +50,7 @@ jobs:
           APK="app/build/outputs/apk/debug/app-debug.apk"
           test -s "$APK"
           unzip -t "$APK" >/dev/null
-          unzip -l "$APK" | grep -Eq 'classes[0-9]*\\.dex'
+          unzip -l "$APK" | grep -Fq 'classes.dex'
           unzip -p "$APK" AndroidManifest.xml >/dev/null
           ls -lh "$APK"
 
