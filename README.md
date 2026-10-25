@@ -14,6 +14,16 @@ A mobile-first black-and-red Kylo Client interface, packaged as an Android WebVi
 ## Important status
 The APK packages the launcher interface. It does **not** install or launch Minecraft, authenticate Microsoft accounts, or run the preview mod toggles inside the game. A compatible Java runtime, game assets, secure official authentication, and real mod implementations are separate work.
 
+
+## Real Minecraft engine work
+
+The original APK is still the **UI preview only**. A separate workflow now builds an engine preview from the open-source Amethyst Android launcher source so we can validate real Minecraft Java execution before merging the Kylo UI.
+
+- See [ENGINE_INTEGRATION.md](ENGINE_INTEGRATION.md) for the current architecture and limitations.
+- Open **Actions → Build Kylo Minecraft Engine Preview → Run workflow** to build the engine APK.
+- The engine preview is currently a separate app; the custom Kylo interface has **not** been merged into the engine yet.
+- Upstream source and licensing: https://github.com/AngelAuraMC/Amethyst-Android
+
 ## Preview on a phone
 Open the [Kylo Client GitHub Pages preview](https://email1fje-dev.github.io/Kylo-client/) in a browser.
 
