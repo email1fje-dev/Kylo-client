@@ -1,8 +1,7 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const app = $(".app");
-const username = $("#username");
-const accountUsername = $("#accountUsername");
+const accountSelect = $("#accountSelect");
 const status = $("#status");
 const accountLabel = $("#accountLabel");
 const modDetailsDialog = $("#modDetailsDialog");
@@ -76,14 +75,51 @@ function showSection(name) {
   saveState();
   window.scrollTo({top:0,behavior:"smooth"});
 }
+let nativeAccounts = [];
 function syncAccount() {
-  const name = state.username || "Offline profile";
-  accountLabel.textContent = name;
+  const selected = nativeAccounts.find(account => account.selected);
+  const name = selected ? selected.name : "No account selected";
+  $("#accountLabel").textContent = name;
   $("#accountName").textContent = name;
-  $("#accountType").textContent = state.username ? "Offline username · not authenticated" : "Offline profile · not authenticated";
-  if (username.value !== state.username) username.value = state.username;
-  if (accountUsername.value !== state.username) accountUsername.value = state.username;
+  $("#accountType").textContent = selected ? "Saved in Fold Craft Launcher" : "Select an account to play";
+  $("#homeAccountStatus").textContent = name;
 }
+function refreshKyloAccounts() {
+  if (!window.KyloAndroid || typeof window.KyloAndroid.getAccounts !== "function") {
+    syncAccount();
+    return;
+  }
+  try {
+    nativeAccounts = JSON.parse(window.KyloAndroid.getAccounts() || "[]");
+    accountSelect.innerHTML = "";
+    if (!nativeAccounts.length) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = "No account saved — add one first";
+      accountSelect.appendChild(option);
+    } else {
+      nativeAccounts.forEach(account => {
+        const option = document.createElement("option");
+        option.value = String(account.index);
+        option.textContent = account.name + (account.selected ? " · SELECTED" : "");
+        option.selected = Boolean(account.selected);
+        accountSelect.appendChild(option);
+      });
+    }
+    syncAccount();
+    $("#accountStatus").textContent = nativeAccounts.length
+      ? "Choose an account. Kylo saves your selection directly in Fold Craft Launcher."
+      : "No saved account found. Tap ADD / MANAGE ACCOUNTS to add one in Fold Craft Launcher.";
+  } catch (_) {
+    $("#accountStatus").textContent = "Couldn't read saved accounts. Try reopening Kylo.";
+  }
+}
+window.refreshKyloAccounts = refreshKyloAccounts;
+window.kyloAccountRequired = function() {
+  status.textContent = "Please select an account first.";
+  showSection("accounts");
+  $("#accountStatus").textContent = "Please select an account first, then choose or add an account below.";
+};
 function syncVersion() {
   $("#homeVersion").textContent = "Minecraft " + state.version;
   $("#homeProfile").textContent = state.profile;
@@ -183,16 +219,8 @@ function openModDetails(id) {
   };
   modDetailsDialog.showModal();
 }
-function saveOfflineProfile() {
-  const value = accountUsername.value.trim();
-  if (value && !validUsername(value)) { $("#accountStatus").textContent = "Invalid name. Use 3–16 letters, numbers, or underscores."; accountUsername.focus(); return false; }
-  state.username = value; syncAccount(); saveState();
-  $("#accountStatus").textContent = value ? "Saved preview profile: " + value + ". This is not a Microsoft-authenticated account." : "Offline profile cleared. Offline-mode access depends on the server.";
-  status.textContent = value ? "Offline profile saved: " + value + ". Game engine is not connected yet." : "Preview mode · Minecraft game engine is not connected.";
-  return true;
-}
 
-loadState(); syncAccount(); syncVersion(); syncSettings(); renderMods(); showSection("home");
+loadState(); syncAccount(); syncVersion(); syncSettings(); renderMods(); showSection("home"); refreshKyloAccounts();
 $("#settingsButton").addEventListener("click",() => showSection("settings"));
 $$(".tab").forEach(tab => tab.addEventListener("click",() => showSection(tab.dataset.section)));
 $("#openVersions").addEventListener("click",() => showSection("versions"));
@@ -204,18 +232,39 @@ username.addEventListener("change",() => {
   state.username=value;syncAccount();saveState();
 });
 $("#playButton").addEventListener("click",() => {
-  const value=username.value.trim();
-  if(value&&!validUsername(value)){status.textContent="Use 3–16 letters, numbers, or underscores.";username.focus();return;}
-  if(value){state.username=value;syncAccount();saveState();}
-  if(window.KyloAndroid&&typeof window.KyloAndroid.launchMinecraft==="function"){
-    status.textContent="Opening Minecraft engine…";
+  if (window.KyloAndroid && typeof window.KyloAndroid.launchMinecraft === "function") {
+    if (!nativeAccounts.some(account => account.selected)) {
+      status.textContent = "Please select an account first.";
+      showSection("accounts");
+      $("#accountStatus").textContent = "Please select an account first.";
+      return;
+    }
+    status.textContent = "Launching Minecraft " + state.version + "…";
     window.KyloAndroid.launchMinecraft(state.version || "1.8.9");
     return;
   }
-  status.textContent="Preview mode · the Minecraft engine is not connected in this browser.";
+  status.textContent = "Open the Kylo Android app to launch Minecraft.";
 });
-$("#saveAccount").addEventListener("click",saveOfflineProfile);
-$("#microsoftButton").addEventListener("click",() => { $("#accountStatus").textContent="Microsoft sign-in isn't connected in this preview. Official authentication needs a secure native/backend integration; don't enter your Microsoft password here."; });
+$("#selectAccountButton").addEventListener("click", () => {
+  const index = Number(accountSelect.value);
+  if (!Number.isInteger(index) || !nativeAccounts.some(account => account.index === index)) {
+    $("#accountStatus").textContent = "Please select an account first.";
+    return;
+  }
+  if (window.KyloAndroid && window.KyloAndroid.selectAccount(index)) {
+    nativeAccounts = nativeAccounts.map(account => ({...account, selected: account.index === index}));
+    syncAccount();
+    refreshKyloAccounts();
+    $("#accountStatus").textContent = "Account selected and saved in Fold Craft Launcher.";
+  } else {
+    $("#accountStatus").textContent = "Could not select that account. Reopen Kylo and try again.";
+  }
+});
+$("#manageAccountsButton").addEventListener("click", () => {
+  if (window.KyloAndroid && window.KyloAndroid.openAccountManager) window.KyloAndroid.openAccountManager();
+  else $("#accountStatus").textContent = "Account management is available in the Android app.";
+});
+$("#homeAccountsButton").addEventListener("click", () => showSection("accounts"));
 $("#modSearch").addEventListener("input",event => {state.modSearch=event.target.value;renderMods();});
 $$(".category-chip").forEach(button => button.addEventListener("click",() => setCategory(button.dataset.category)));
 $$(".preset-button").forEach(button => button.addEventListener("click",() => applyPreset(button.dataset.preset)));
