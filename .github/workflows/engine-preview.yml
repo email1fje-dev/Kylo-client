@@ -120,6 +120,9 @@ jobs:
           import android.webkit.WebView
           import android.webkit.WebViewClient
           import android.widget.Toast
+          import android.widget.ProgressBar
+          import android.app.AlertDialog
+          import java.util.UUID
           import androidx.appcompat.app.AppCompatDialog
           import com.tungsten.fcl.setting.Profiles
           import com.tungsten.fcl.setting.Accounts
@@ -183,9 +186,19 @@ jobs:
                   }
 
                   @JavascriptInterface
-                  fun openAccountManager() {
-                      runOnUiThread {
-                          startActivity(Intent(this@KyloHomeActivity, MainActivity::class.java))
+                  fun addOfflineAccount(username: String?): String {
+                      val name = username?.trim() ?: return "نام کاربری نامعتبر است."
+                      if (!name.matches(Regex("[A-Za-z0-9_]{3,16}"))) return "نام کاربری نامعتبر است."
+                      return try {
+                          val account = Accounts.FACTORY_OFFLINE.create(
+                              name,
+                              com.tungsten.fclcore.auth.offline.OfflineAccountFactory.getUUIDFromUserName(name)
+                          )
+                          Accounts.addAccount(account)
+                          Accounts.setSelectedAccount(account)
+                          if (Accounts.getSelectedAccount() === account) "ok" else "ذخیرهٔ اکانت ناموفق بود."
+                      } catch (error: Exception) {
+                          error.message ?: "ساخت اکانت ناموفق بود."
                       }
                   }
 
@@ -237,8 +250,16 @@ jobs:
                       .buildAsync()
                       .whenComplete { profile.repository.refreshVersions() }
 
-                  val dialog = TaskDialog(this, TaskCancellationAction.NORMAL)
-                  dialog.setTitle("Installing Minecraft $version")
+                  val progress = ProgressBar(this).apply {
+                      isIndeterminate = true
+                      setPadding(48, 24, 48, 24)
+                  }
+                  val dialog = AlertDialog.Builder(this)
+                      .setTitle("Installing Minecraft $version")
+                      .setView(progress)
+                      .setNegativeButton("Cancel") { _, _ -> executorRef?.cancel() }
+                      .create()
+                  var executorRef: TaskExecutor? = null
                   val executor: TaskExecutor = task.executor(object : TaskListener() {
                       override fun onStop(success: Boolean, executor: TaskExecutor) {
                           runOnUiThread {
@@ -255,7 +276,8 @@ jobs:
                           }
                       }
                   })
-                  dialog.setExecutor(executor)
+                  executorRef = executor
+                  dialog.setOnDismissListener { if (executor.isRunning) executor.cancel() }
                   dialog.show()
                   executor.start()
               }
