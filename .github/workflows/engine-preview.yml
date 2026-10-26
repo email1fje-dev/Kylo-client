@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: email1fje-dev/Kylo-client
-          ref: main
+          ref: ${{ github.ref }}
           path: kylo
 
       - name: Set up Java 17
