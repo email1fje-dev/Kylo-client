@@ -304,22 +304,19 @@ jobs:
           from pathlib import Path
           p = Path("FCL/src/main/java/com/tungsten/fcl/game/LauncherHelper.java")
           s = p.read_text()
-          old = """                            if (MainActivity.getInstance().shouldPlayVideo()) {
-                                MainActivity.getInstance().setMediaPlayer(null);
-                                MainActivity.getInstance().binding.videoView.stopPlayback();
-                            }"""
-          new = """                            // KyloHomeActivity does not create the legacy MainActivity singleton.
-                            // Only stop the legacy background video when that activity actually owns this launch.
-                            if (context instanceof MainActivity) {
-                                MainActivity mainActivity = (MainActivity) context;
-                                if (mainActivity.shouldPlayVideo()) {
-                                    mainActivity.setMediaPlayer(null);
-                                    mainActivity.binding.videoView.stopPlayback();
-                                }
-                            }"""
-          if old not in s:
-              raise SystemExit("Could not find LauncherHelper MainActivity singleton access")
-          p.write_text(s.replace(old, new, 1))
+          import re
+          pattern = r"if\\s*\\(\\s*MainActivity\\.getInstance\\(\\)\\.shouldPlayVideo\\(\\)\\s*\\)\\s*\\{\\s*MainActivity\\.getInstance\\(\\)\\.setMediaPlayer\\(null\\)\\s*;\\s*MainActivity\\.getInstance\\(\\)\\.binding\\.videoView\\.stopPlayback\\(\\)\\s*;\\s*\\}"
+          new = """if (context instanceof MainActivity) {
+                                  MainActivity mainActivity = (MainActivity) context;
+                                  if (mainActivity.shouldPlayVideo()) {
+                                      mainActivity.setMediaPlayer(null);
+                                      mainActivity.binding.videoView.stopPlayback();
+                                  }
+                              }"""
+          s, count = re.subn(pattern, new, s, count=1)
+          if count != 1:
+              raise SystemExit("Could not locate legacy MainActivity video cleanup in LauncherHelper")
+          p.write_text(s)
           PY
 
           # Translate the whole Kylo WebView UI, including dynamically-created mod cards/dialogs.
