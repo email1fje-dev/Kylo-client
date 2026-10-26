@@ -73,13 +73,14 @@ jobs:
           splash = base / "java/com/tungsten/fcl/activity/SplashActivity.kt"
           source = splash.read_text()
           # Suppress the upstream launcher wallpaper so it does not flash before Kylo.
-          source = source.replace(
-              """        ImageUtil.loadInto(
-                      binding.background, ThemeEngine.getInstance().getTheme().getBackground(this)
-                  )""",
-              """        binding.background.setImageDrawable(null)
-                  binding.background.setBackgroundColor(android.graphics.Color.rgb(9, 9, 12))"""
+          source, replaced = re.subn(
+              r"(?m)^\s*ImageUtil\.loadInto\(\s*binding\.background, ThemeEngine\.getInstance\(\)\.getTheme\(\)\.getBackground\(this\)\s*\)",
+              "        binding.background.setImageDrawable(null)\\n        binding.background.setBackgroundColor(android.graphics.Color.rgb(9, 9, 12))",
+              source,
+              count=1
           )
+          if replaced != 1:
+              raise SystemExit("Could not remove FCL startup wallpaper call")
           old = "Intent(this@SplashActivity, MainActivity::class.java)"
           if old not in source:
               raise SystemExit("Could not find FCL launcher transition in SplashActivity")
