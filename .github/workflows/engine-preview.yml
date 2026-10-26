@@ -415,7 +415,39 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           p = Path("FCL/src/main/assets/kylo/www/index.html")
-          s = p.read_text().replace('<script src="app.js"></script>', '<script src="app.js"></script>\\n<script src="fa-ui.js"></script>')
+          s = p.read_text().replace('<script src="app.js"></script>', '<script src="app.js"></script>\n<script src="fa-ui.js"></script>')
+          p.write_text(s)
+          PY
+
+          # Replace the Android system splash artwork and translate native launcher messages.
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root = Path("FCL/src/main/res")
+          for p in root.rglob("*.xml"):
+              try:
+                  s = p.read_text()
+              except Exception:
+                  continue
+              s = s.replace("@mipmap/ic_launcher", "@drawable/ic_kylo_launcher")
+              p.write_text(s)
+          p = Path("FCL/src/main/java/com/tungsten/fcl/activity/KyloHomeActivity.kt")
+          s = p.read_text()
+          replacements = {
+              "Preparing Minecraft versions…":"در حال آماده‌سازی نسخه‌های ماینکرفت…",
+              "Could not load Minecraft versions. Check your connection and try again.":"بارگذاری نسخه‌های ماینکرفت ناموفق بود؛ اتصال اینترنت را بررسی کن.",
+              "Launching Minecraft $version…":"در حال اجرای ماینکرفت $version…",
+              "Installing Minecraft $version":"در حال نصب ماینکرفت $version",
+              "Cancel":"لغو",
+              "Minecraft $version installed. Launching…":"ماینکرفت $version نصب شد؛ در حال اجرا…",
+              "Installation failed or was cancelled.":"نصب ناموفق بود یا لغو شد.",
+              "Could not install Minecraft $version. Check your connection and try again.":"نصب ماینکرفت $version ناموفق بود؛ اتصال اینترنت را بررسی کن.",
+              "Select account to play":"برای بازی یک حساب انتخاب کن",
+              "No account selected":"هیچ حسابی انتخاب نشده",
+              "Offline profile":"پروفایل آفلاین"
+          }
+          for a,b in replacements.items():
+              s = s.replace(a,b)
           p.write_text(s)
           PY
 
