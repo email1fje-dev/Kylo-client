@@ -298,6 +298,127 @@ jobs:
           }
           KOTLIN
 
+          # The game launch helper assumes the legacy MainActivity is alive.
+          # Kylo launches from its own Activity, so guard the optional legacy video cleanup.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("FCL/src/main/java/com/tungsten/fcl/game/LauncherHelper.java")
+          s = p.read_text()
+          old = """                            if (MainActivity.getInstance().shouldPlayVideo()) {
+                                MainActivity.getInstance().setMediaPlayer(null);
+                                MainActivity.getInstance().binding.videoView.stopPlayback();
+                            }"""
+          new = """                            // KyloHomeActivity does not create the legacy MainActivity singleton.
+                            // Only stop the legacy background video when that activity actually owns this launch.
+                            if (context instanceof MainActivity) {
+                                MainActivity mainActivity = (MainActivity) context;
+                                if (mainActivity.shouldPlayVideo()) {
+                                    mainActivity.setMediaPlayer(null);
+                                    mainActivity.binding.videoView.stopPlayback();
+                                }
+                            }"""
+          if old not in s:
+              raise SystemExit("Could not find LauncherHelper MainActivity singleton access")
+          p.write_text(s.replace(old, new, 1))
+          PY
+
+          # Translate the whole Kylo WebView UI, including dynamically-created mod cards/dialogs.
+          cat > FCL/src/main/assets/kylo/www/fa-ui.js <<'JS'
+          (() => {
+            const dict = {
+              "Home":"خانه","Versions":"نسخه‌ها","Mods":"مودها","Accounts":"حساب‌ها",
+              "Open settings":"باز کردن تنظیمات","JAVA EDITION · MOBILE":"نسخه جاوا · موبایل",
+              "YOUR GAME.":"بازی تو.","YOUR RULES.":"قوانین تو.","A custom home for your Minecraft sessions.":"خانه‌ای اختصاصی برای تجربه‌های ماینکرفت",
+              "SELECTED VERSION":"نسخهٔ انتخاب‌شده","BedWars profile":"پروفایل بدوارز","ACTIVE ACCOUNT":"حساب فعال",
+              "No account selected":"هیچ حسابی انتخاب نشده","CHOOSE ACCOUNT ↗":"انتخاب حساب ↗",
+              "LAUNCH MINECRAFT":"اجرای ماینکرفت","Launches the selected Minecraft version using the built-in engine.":"نسخهٔ انتخاب‌شده را با موتور داخلی اجرا می‌کند.",
+              "VERSION":"نسخه","ACCOUNT":"حساب","1.8.9 selected":"نسخهٔ ۱.۸.۹ انتخاب شده","Offline profile":"پروفایل آفلاین",
+              "BUILT FOR":"مناسب برای","BEDWARS READY":"آمادهٔ بدوارز","Your PvP setup starts here.":"تنظیمات PvP تو از اینجا شروع می‌شود.",
+              "GAME SETUP":"تنظیم بازی","CHOOSE ":"انتخاب ","VERSION":"نسخه","Minecraft 1.8.9":"ماینکرفت ۱.۸.۹","Minecraft 1.12.2":"ماینکرفت ۱.۱۲.۲","Minecraft 1.20.1":"ماینکرفت ۱.۲۰.۱",
+              "Classic PvP · BedWars":"پی‌وی‌پی کلاسیک · بدوارز","Classic servers and mods":"سرورها و مودهای کلاسیک","Modern gameplay profile":"پروفایل تجربهٔ مدرن",
+              "Heads up":"توجه","KYLO CUSTOMIZATION LAB":"آزمایشگاه شخصی‌سازی KYLO","MAKE IT ":"شخصی‌سازی ","YOURS.":"برای خودت.",
+              "Build your PvP setup with toggles, presets, search and per-mod settings.":"تنظیمات PvP را با کلیدها، پیش‌تنظیم‌ها، جست‌وجو و تنظیمات جداگانه بساز.",
+              "ENABLED":"فعال","YOUR CLIENT CONFIG":"پیکربندی کلاینت","Search mods...":"جست‌وجوی مودها...",
+              "All mods":"همهٔ مودها","HUD":"رابط بازی","PvP":"پی‌وی‌پی","Performance":"کارایی","Visuals":"ظاهر","Quality of Life":"کیفیت تجربه",
+              "QUICK PRESETS":"تنظیمات آماده","One tap setup":"تنظیم با یک لمس","BedWars":"بدوارز","FPS Boost":"افزایش FPS","Lean setup":"تنظیم سبک","Minimal":"حداقلی","Clean screen":"صفحهٔ خلوت",
+              "MOD LIBRARY":"کتابخانهٔ مودها","FEATURES":"قابلیت‌ها","Configuration saves on this device. Game integration is not connected.":"تنظیمات روی این دستگاه ذخیره می‌شوند؛ هنوز به بازی متصل نیستند.",
+              "Preview vs. real mods":"تفاوت پیش‌نمایش با مود واقعی","FEATURE CONFIGURATION":"تنظیم قابلیت","Mod settings":"تنظیمات مود","SAVE SETTINGS":"ذخیرهٔ تنظیمات",
+              "Close":"بستن","YOUR ACCOUNT":"حساب تو","PLAYER IDENTITY":"هویت بازیکن","Select an account to play":"برای بازی حسابی انتخاب کن",
+              "SAVED ACCOUNTS":"حساب‌های ذخیره‌شده","No account selected":"هیچ حسابی انتخاب نشده","Select account":"انتخاب حساب",
+              "CLIENT SETTINGS":"تنظیمات کلاینت","MAKE IT YOURS":"شخصی‌سازی","Preferences for the Kylo launcher preview.":"تنظیمات پیش‌نمایش لانچر Kylo",
+              "Red accent glow":"درخشش قرمز","Use the Kylo red highlight":"استفاده از رنگ قرمز Kylo","Compact layout":"چیدمان فشرده",
+              "Reduce spacing between cards":"کاهش فاصلهٔ کارت‌ها","Reset preview preferences":"بازنشانی تنظیمات پیش‌نمایش",
+              "Clear saved selections on this device":"پاک‌کردن انتخاب‌های ذخیره‌شده در این دستگاه","Kylo Client · Early Access":"کلاینت Kylo · دسترسی زودهنگام",
+              "KYLO CLIENT":"کلاینت KYLO","EARLY ACCESS":"دسترسی زودهنگام","FPS Display":"نمایش FPS","CPS Counter":"شمارندهٔ CPS",
+              "Keystrokes":"نمایش کلیدها","Ping Display":"نمایش پینگ","Armor Status":"وضعیت زره","Potion Effects":"اثر معجون‌ها",
+              "Scoreboard Tweaks":"تنظیمات اسکوربورد","Crosshair Editor":"ویرایش نشانه‌گیر","Hit Color":"رنگ ضربه","Motion Blur":"تاری دید حرکتی",
+              "Zoom":"زوم","Toggle Sprint":"دویدن کلیدی","Reach Display":"نمایش فاصله","Combo Counter":"شمارندهٔ کمبو",
+              "Block Overlay":"خط دور بلوک","Smooth Camera":"دوربین نرم","Color Boost":"تقویت رنگ","Clear Water":"آب شفاف",
+              "Particle Control":"کنترل ذرات","Animations":"انیمیشن‌ها","Entity Optimizer":"بهینه‌سازی موجودیت‌ها","Chunk Updates":"به‌روزرسانی چانک",
+              "Screenshot Tool":"ابزار اسکرین‌شات","Coordinates HUD":"نمایش مختصات","Direction HUD":"نمایش جهت","Chat Customizer":"شخصی‌سازی چت",
+              "Auto GG Reminder":"یادآور GG","Keybind Profiles":"پروفایل کلیدها","Interface Scale":"مقیاس رابط",
+              "HUD position":"جایگاه رابط","Text size":"اندازهٔ متن","Dark background":"پس‌زمینهٔ تیره","Mouse buttons":"دکمه‌های ماوس",
+              "Left + Right":"چپ + راست","Left only":"فقط چپ","Right only":"فقط راست","Show mouse buttons":"نمایش دکمه‌های ماوس",
+              "Show spacebar":"نمایش فاصله","Widget scale":"مقیاس ابزارک","Colorize high ping":"رنگی‌کردن پینگ بالا",
+              "Display style":"سبک نمایش","Icons":"آیکون‌ها","Bars":"نوارها","Numbers":"اعداد","Show durability percent":"نمایش درصد دوام",
+              "Show effect icons":"نمایش آیکون اثرها","Show effect timers":"نمایش زمان اثرها","Scoreboard scale":"مقیاس اسکوربورد",
+              "Text shadow":"سایهٔ متن","Crosshair style":"سبک نشانه‌گیر","Classic":"کلاسیک","Dot":"نقطه","Cross":"صلیب","Circle":"دایره",
+              "Size":"اندازه","Dynamic crosshair":"نشانه‌گیر پویا","Hit color":"رنگ ضربه","White":"سفید","Cyan":"فیروزه‌ای","Gold":"طلایی",
+              "Fade duration":"مدت محوشدن","Effect strength":"شدت افکت","Only while sprinting":"فقط هنگام دویدن","Zoom level":"میزان زوم",
+              "Smooth zoom":"زوم نرم","Sneak behavior":"رفتار مخفی‌شدن","Normal":"عادی","Toggle sneak":"تغییر وضعیت مخفی‌شدن",
+              "Hold sneak":"نگه‌داشتن مخفی‌شدن","Auto sprint":"دویدن خودکار","Distance units":"واحد فاصله","Blocks":"بلوک",
+              "Decimal blocks":"بلوک اعشاری","Only show with target":"فقط هنگام هدف‌گیری","Reset after":"بازنشانی پس از",
+              "Sound on combo":"صدا هنگام کمبو","Outline style":"سبک دورخط","Thin":"باریک","Bold":"ضخیم","Filled":"پرشده",
+              "Depth effect":"افکت عمق","Smoothness":"نرمی","View bobbing":"تکان دوربین","Saturation":"اشباع رنگ","Vignette":"تیرگی گوشه‌ها",
+              "Water opacity":"شفافیت آب","All":"همه","Decreased":"کاهش‌یافته","Minimal":"حداقلی","Animation preset":"پیش‌تنظیم انیمیشن",
+              "Vanilla":"اصلی","Smooth":"نرم","Swing speed":"سرعت ضربه","Optimization level":"سطح بهینه‌سازی","Safe":"ایمن",
+              "Balanced":"متعادل","Aggressive":"تهاجمی","Update mode":"حالت به‌روزرسانی","Fast":"سریع","Conservative":"محافظه‌کار",
+              "Image format":"قالب تصویر","PNG":"PNG","JPG":"JPG","Hide HUD in screenshot":"پنهان‌کردن رابط در اسکرین‌شات",
+              "Coordinate format":"قالب مختصات","XYZ":"XYZ","Compact":"فشرده","XYZ + Facing":"XYZ + جهت","Position":"جایگاه",
+              "Compass style":"سبک قطب‌نما","Text":"متن","Compass bar":"نوار قطب‌نما","Chat scale":"مقیاس چت",
+              "Show timestamps":"نمایش زمان پیام","Reminder":"یادآور","After match":"پس از مسابقه","After win":"پس از برد","Off":"خاموش",
+              "Keybind preset":"پیش‌تنظیم کلیدها","Default":"پیش‌فرض","Compact PvP":"پی‌وی‌پی فشرده","Left-handed":"چپ‌دست",
+              "UI scale":"مقیاس رابط","Enable ":"فعال‌کردن ","Configure ":"تنظیمات ","Save":"ذخیره","Cancel":"لغو"
+            };
+            const translate = value => {
+              let s = value;
+              if (Object.prototype.hasOwnProperty.call(dict, s)) return dict[s];
+              for (const [en, fa] of Object.entries(dict).sort((a,b)=>b[0].length-a[0].length)) {
+                s = s.split(en).join(fa);
+              }
+              return s;
+            };
+            const walk = root => {
+              if (!root) return;
+              const nodes = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+              const list = [];
+              while (nodes.nextNode()) list.push(nodes.currentNode);
+              for (const n of list) {
+                const v = n.nodeValue;
+                const t = translate(v.trim());
+                if (t !== v.trim()) n.nodeValue = v.replace(v.trim(), t);
+              }
+              root.querySelectorAll?.("input[placeholder],button[aria-label],button[title],input[aria-label]").forEach(el => {
+                for (const attr of ["placeholder","aria-label","title"]) if (el.hasAttribute(attr)) el.setAttribute(attr, translate(el.getAttribute(attr)));
+              });
+            };
+            const start = () => {
+              walk(document.body);
+              new MutationObserver(records => records.forEach(r => {
+                if (r.type === "childList") r.addedNodes.forEach(n => { if (n.nodeType === 1) walk(n); else if (n.nodeType === 3) { const t=translate(n.nodeValue.trim()); if(t!==n.nodeValue.trim()) n.nodeValue=n.nodeValue.replace(n.nodeValue.trim(),t); } });
+                if (r.type === "characterData") { const t=translate(r.target.nodeValue.trim()); if(t!==r.target.nodeValue.trim()) r.target.nodeValue=r.target.nodeValue.replace(r.target.nodeValue.trim(),t); }
+              })).observe(document.body,{subtree:true,childList:true,characterData:true});
+            };
+            if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, {once:true}); else start();
+          })();
+          JS
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("FCL/src/main/assets/kylo/www/index.html")
+          s = p.read_text().replace('<script src="app.js"></script>', '<script src="app.js"></script>\\n<script src="fa-ui.js"></script>')
+          p.write_text(s)
+          PY
+
           # Update copy for the native version install/launch bridge.
           python3 - <<'PY'
           from pathlib import Path
