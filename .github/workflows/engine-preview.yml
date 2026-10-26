@@ -305,7 +305,7 @@ jobs:
           p = Path("FCL/src/main/java/com/tungsten/fcl/game/LauncherHelper.java")
           s = p.read_text()
           import re
-          pattern = r"if\\s*\\(\\s*MainActivity\\.getInstance\\(\\)\\.shouldPlayVideo\\(\\)\\s*\\)\\s*\\{\\s*MainActivity\\.getInstance\\(\\)\\.setMediaPlayer\\(null\\)\\s*;\\s*MainActivity\\.getInstance\\(\\)\\.binding\\.videoView\\.stopPlayback\\(\\)\\s*;\\s*\\}"
+          pattern = r"if\s*\(\s*MainActivity\.getInstance\(\)\.shouldPlayVideo\(\)\s*\)\s*\{\s*MainActivity\.getInstance\(\)\.setMediaPlayer\(null\)\s*;\s*MainActivity\.getInstance\(\)\.binding\.videoView\.stopPlayback\(\)\s*;\s*\}"
           new = """if (context instanceof MainActivity) {
                                   MainActivity mainActivity = (MainActivity) context;
                                   if (mainActivity.shouldPlayVideo()) {
