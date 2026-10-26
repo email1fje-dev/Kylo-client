@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -41,13 +41,13 @@
   </section>
 
   <section class="page" id="page-versions" data-page="versions">
-    <div class="page-heading"><p class="eyebrow">GAME SETUP</p><h1>CHOOSE <span>VERSION</span></h1><p>Choose the Minecraft version you want Kylo to install or launch.</p></div>
+    <div class="page-heading"><p class="eyebrow">GAME SETUP</p><h1>CHOOSE <span>VERSION</span></h1><p>نسخهٔ Minecraft را برای نصب یا اجرا انتخاب کن.</p></div>
     <div class="option-list" id="versionOptions">
       <button class="option selected" data-version="1.8.9" data-profile="BedWars profile"><span class="option-icon">⚔</span><span><strong>Minecraft 1.8.9</strong><small>Classic PvP · BedWars</small></span><span class="option-check">✓</span></button>
       <button class="option" data-version="1.12.2" data-profile="Classic profile"><span class="option-icon">◆</span><span><strong>Minecraft 1.12.2</strong><small>Classic servers and mods</small></span><span class="option-check">✓</span></button>
       <button class="option" data-version="1.20.1" data-profile="Modern profile"><span class="option-icon">✧</span><span><strong>Minecraft 1.20.1</strong><small>Modern gameplay profile</small></span><span class="option-check">✓</span></button>
     </div>
-    <div class="info-card"><strong>Heads up</strong><p>Kylo uses the built-in Fold Craft engine to install missing game files and launch the selected version.</p></div>
+    <div class="info-card"><strong>Heads up</strong><p>موتور داخلی بازی فایل‌های لازم را نصب می‌کند و نسخهٔ انتخاب‌شده را اجرا می‌کند.</p></div>
   </section>
 
   <section class="page" id="page-mods" data-page="mods">
@@ -64,7 +64,7 @@
     <div class="mods-list-heading"><strong>MOD LIBRARY</strong><span id="modResults">30 FEATURES</span></div>
     <div class="mods-grid" id="modsGrid"></div>
     <p class="notice" id="modsStatus" role="status">Configuration saves on this device. Game integration is not connected.</p>
-    <div class="info-card"><strong>Preview vs. real mods</strong><p>These are interactive client configuration options. They do not install code into Minecraft yet. The native Java client and compatible mod implementations are needed before these features can affect gameplay.</p></div>
+    <div class="info-card"><strong>Preview vs. real mods</strong><p>این‌ها تنظیمات نمایشی هستند و تا زمانی که مودهای سازگار نصب نشوند، رفتار بازی را تغییر نمی‌دهند.</p></div>
   </section>
 
   <dialog id="modDetailsDialog">
@@ -76,13 +76,13 @@
   </dialog>
 
   <section class="page" id="page-accounts" data-page="accounts">
-    <div class="page-heading"><p class="eyebrow">PLAYER IDENTITY</p><h1>YOUR <span>ACCOUNT</span></h1><p>Choose an account already saved in Fold Craft Launcher, or open its account manager to add one.</p></div>
+    <div class="page-heading"><p class="eyebrow">PLAYER IDENTITY</p><h1>YOUR <span>ACCOUNT</span></h1><p>اکانت ذخیره‌شده را انتخاب کن یا یک پروفایل آفلاین بساز.</p></div>
     <div class="account-card"><span class="avatar">K</span><div><small>ACTIVE ACCOUNT</small><h2 id="accountName">No account selected</h2><p id="accountType">Select an account to play</p></div></div>
     <label class="field-label" for="accountSelect">SAVED ACCOUNTS</label>
     <select id="accountSelect" class="account-select"><option value="">No account selected</option></select>
-    <button class="play-button" id="selectAccountButton">SELECT ACCOUNT</button>
-    <button class="secondary-button" id="manageAccountsButton">ADD / MANAGE ACCOUNTS IN FOLD CRAFT <span>↗</span></button>
-    <p class="notice" id="accountStatus" role="status">The selected account is saved by Fold Craft Launcher and used when Kylo launches Minecraft.</p>
+    <button class="play-button" id="selectAccountButton">انتخاب اکانت</button>
+    <div class="offline-account-form"><label class="field-label" for="offlineUsername">نام کاربری آفلاین</label><input id="offlineUsername" type="text" maxlength="16" autocomplete="off" placeholder="مثلاً Steve" dir="ltr"><button class="secondary-button" id="addOfflineAccountButton" type="button">ساخت اکانت آفلاین</button></div>
+    <p class="notice" id="accountStatus" role="status">انتخاب اکانت در موتور بازی ذخیره می‌شود و برای اجرای Minecraft استفاده خواهد شد.</p>
   </section>
 
   <section class="page" id="page-settings" data-page="settings">
@@ -92,7 +92,7 @@
       <label class="setting-row"><span><strong>Compact layout</strong><small>Reduce spacing between cards</small></span><input id="compactToggle" type="checkbox" class="switch"></label>
       <button class="setting-row setting-button" id="resetButton"><span><strong>Reset preview preferences</strong><small>Clear saved selections on this device</small></span><span>↻</span></button>
     </div>
-    <div class="info-card"><strong>Kylo Client · Early Access</strong><p>This is a working web UI prototype. Microsoft authentication, mod installation, and starting Minecraft are not available until the native launcher engine is built.</p></div>
+    <div class="info-card"><strong>Kylo Client · Early Access</strong><p>رابط Kylo به موتور بومی متصل است؛ ورود مایکروسافت و نصب مودها در این نسخه از رابط Kylo هنوز پیاده‌سازی نشده‌اند.</p></div>
   </section>
 
   <footer>KYLO CLIENT <span>•</span> EARLY ACCESS</footer>
