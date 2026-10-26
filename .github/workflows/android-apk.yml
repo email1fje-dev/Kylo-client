@@ -2,7 +2,7 @@ name: Build Kylo Client Android APK
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "remove-fcl-ui"]
   workflow_dispatch:
 
 permissions:
