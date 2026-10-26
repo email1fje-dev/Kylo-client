@@ -81,7 +81,7 @@ function syncAccount() {
   const name = selected ? selected.name : "No account selected";
   $("#accountLabel").textContent = name;
   $("#accountName").textContent = name;
-  $("#accountType").textContent = selected ? "Saved in Fold Craft Launcher" : "Select an account to play";
+  $("#accountType").textContent = selected ? "ذخیره‌شده در Kylo" : "Select an account to play";
   $("#homeAccountStatus").textContent = name;
 }
 function refreshKyloAccounts() {
@@ -108,8 +108,8 @@ function refreshKyloAccounts() {
     }
     syncAccount();
     $("#accountStatus").textContent = nativeAccounts.length
-      ? "Choose an account. Kylo saves your selection directly in Fold Craft Launcher."
-      : "No saved account found. Tap ADD / MANAGE ACCOUNTS to add one in Fold Craft Launcher.";
+      ? "اکانت را انتخاب کن؛ انتخاب در موتور بازی ذخیره می‌شود."
+      : "اکانتی ذخیره نشده؛ از فرم پایین یک اکانت آفلاین بساز.";
   } catch (_) {
     $("#accountStatus").textContent = "Couldn't read saved accounts. Try reopening Kylo.";
   }
@@ -252,14 +252,29 @@ $("#selectAccountButton").addEventListener("click", () => {
     nativeAccounts = nativeAccounts.map(account => ({...account, selected: account.index === index}));
     syncAccount();
     refreshKyloAccounts();
-    $("#accountStatus").textContent = "Account selected and saved in Fold Craft Launcher.";
+    $("#accountStatus").textContent = "اکانت انتخاب و در موتور بازی ذخیره شد.";
   } else {
     $("#accountStatus").textContent = "Could not select that account. Reopen Kylo and try again.";
   }
 });
-$("#manageAccountsButton").addEventListener("click", () => {
-  if (window.KyloAndroid && window.KyloAndroid.openAccountManager) window.KyloAndroid.openAccountManager();
-  else $("#accountStatus").textContent = "Account management is available in the Android app.";
+$("#addOfflineAccountButton").addEventListener("click", () => {
+  const username = $("#offlineUsername").value.trim();
+  if (!/^[A-Za-z0-9_]{3,16}$/.test(username)) {
+    $("#accountStatus").textContent = "نام کاربری باید ۳ تا ۱۶ حرف انگلیسی، عدد یا زیرخط باشد.";
+    return;
+  }
+  if (!window.KyloAndroid || typeof window.KyloAndroid.addOfflineAccount !== "function") {
+    $("#accountStatus").textContent = "ساخت اکانت در نسخهٔ اندروید در دسترس است.";
+    return;
+  }
+  const result = window.KyloAndroid.addOfflineAccount(username);
+  if (result === "ok") {
+    $("#offlineUsername").value = "";
+    refreshKyloAccounts();
+    $("#accountStatus").textContent = "اکانت آفلاین ساخته و انتخاب شد.";
+  } else {
+    $("#accountStatus").textContent = result || "ساخت اکانت ناموفق بود.";
+  }
 });
 $("#homeAccountsButton").addEventListener("click", () => showSection("accounts"));
 $("#modSearch").addEventListener("input",event => {state.modSearch=event.target.value;renderMods();});
@@ -275,5 +290,4 @@ $("#resetButton").addEventListener("click",() => {
   $("#accountStatus").textContent="Preview preferences reset.";status.textContent="Preview preferences reset. Game engine is not connected.";showSection("home");
 });
 
-// This is a UI/configuration prototype. It does not install Java mods, authenticate Microsoft,
-// or launch Minecraft. Those require a native launcher, trusted mod implementations and runtime.
+// Minecraft install and launch are handled by the native engine bridge. Mod toggles remain local preferences until compatible mod implementations are integrated.
