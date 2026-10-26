@@ -103,6 +103,13 @@ jobs:
               <path android:fillColor="#F04452" android:pathData="M7,6h8v14l13,-14h11L24,22l16,20H29L18,28l-3,4v10H7z"/>
           </vector>
           XML
+          # Supply the foreground resource referenced by upstream adaptive-icon XML.
+          cat > FCL/src/main/res/drawable/ic_kylo_launcher_foreground.xml <<'XML'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="48dp" android:height="48dp" android:viewportWidth="48" android:viewportHeight="48">
+              <path android:fillColor="#F04452" android:pathData="M7,6h8v14l13,-14h11L24,22l16,20H29L18,28l-3,4v10H7z"/>
+          </vector>
+          XML
           sed -i 's|android:icon="@mipmap/ic_launcher"|android:icon="@drawable/ic_kylo_launcher"|g; s|android:roundIcon="@mipmap/ic_launcher"|android:roundIcon="@drawable/ic_kylo_launcher"|g' FCL/src/main/AndroidManifest.xml
 
           cat > FCL/src/main/java/com/tungsten/fcl/activity/KyloHomeActivity.kt <<'KOTLIN'
