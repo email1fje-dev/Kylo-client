@@ -252,12 +252,12 @@ jobs:
                       isIndeterminate = true
                       setPadding(48, 24, 48, 24)
                   }
+                  var executorRef: TaskExecutor? = null
                   val dialog = AlertDialog.Builder(this)
                       .setTitle("Installing Minecraft $version")
                       .setView(progress)
                       .setNegativeButton("Cancel") { _, _ -> executorRef?.cancel() }
                       .create()
-                  var executorRef: TaskExecutor? = null
                   val executor: TaskExecutor = task.executor(object : TaskListener() {
                       override fun onStop(success: Boolean, executor: TaskExecutor) {
                           runOnUiThread {
